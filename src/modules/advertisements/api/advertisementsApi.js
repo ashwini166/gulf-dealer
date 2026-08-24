@@ -15,6 +15,7 @@ const buildAdvertisementFormData = (payload, { status } = {}) => {
   appendIfPresent(formData, "durationDays", payload.durationDays);
   appendIfPresent(formData, "paymentMethod", payload.paymentMethod);
   appendIfPresent(formData, "useWalletBalance", payload.useWalletBalance);
+  appendIfPresent(formData, "useDealerPlanBenefit", payload.useDealerPlanBenefit);
   appendIfPresent(formData, "currentStep", payload.currentStep);
   appendIfPresent(formData, "status", status);
 

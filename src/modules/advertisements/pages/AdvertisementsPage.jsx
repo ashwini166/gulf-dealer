@@ -137,6 +137,47 @@ const getPlacementMeta = (category) =>
   placementMeta.find((placement) => placement.category === category) ||
   placementMeta[0];
 
+const getBenefitStatus = (planAdBenefits, category) => {
+  const benefit = planAdBenefits?.[category];
+  const included = Number(benefit?.included || 0);
+  const used = Number(benefit?.used || 0);
+  const remaining = Number(benefit?.remaining || 0);
+
+  if (remaining > 0) {
+    return {
+      benefit,
+      included,
+      used,
+      remaining,
+      isAvailable: true,
+      label: `${remaining} included left`,
+      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    };
+  }
+
+  if (included > 0) {
+    return {
+      benefit,
+      included,
+      used,
+      remaining,
+      isAvailable: false,
+      label: `Included used ${used}/${included}`,
+      className: "border-amber-200 bg-amber-50 text-amber-700",
+    };
+  }
+
+  return {
+    benefit,
+    included,
+    used,
+    remaining,
+    isAvailable: false,
+    label: "Paid placement",
+    className: "border-slate-200 bg-slate-50 text-slate-500",
+  };
+};
+
 const objectUrlCache = new WeakMap();
 
 const getObjectUrl = (file) => {
@@ -296,7 +337,9 @@ const SummaryPanel = ({ placement, durationDays, price, isIncludedWithPlan }) =>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Duration</span>
-          <span className="font-bold text-slate-950">{durationDays} Days</span>
+          <span className="font-bold text-slate-950">
+            {isIncludedWithPlan ? "Until plan expiry" : `${durationDays} Days`}
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Ad Fee</span>
@@ -403,10 +446,18 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
 
   const selectPlacement = (category) => {
     const plan = plans.find((item) => item.category === category);
+    const benefitStatus = getBenefitStatus(planAdBenefits, category);
+
+    if (benefitStatus.isAvailable) {
+      setUseWalletBalance(false);
+    }
+
     setForm((current) => ({
       ...current,
       category,
-      durationDays: getMostPopularDuration(plan?.pricingTiers),
+      durationDays: benefitStatus.isAvailable
+        ? 30
+        : getMostPopularDuration(plan?.pricingTiers),
     }));
   };
 
@@ -432,8 +483,13 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
       setError("");
       const payload = {
         ...form,
-        paymentMethod: useWalletBalance ? "wallet" : form.paymentMethod,
-        useWalletBalance,
+        paymentMethod: isIncludedWithPlan
+          ? "card"
+          : useWalletBalance
+          ? "wallet"
+          : form.paymentMethod,
+        useWalletBalance: isIncludedWithPlan ? false : useWalletBalance,
+        useDealerPlanBenefit: isIncludedWithPlan,
         currentStep: isDraft ? step : wizardSteps.length,
       };
       const result = isDraft
@@ -491,6 +547,11 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
         setError("Redirect URL is required.");
         return;
       }
+
+      if (isIncludedWithPlan) {
+        setStep(5);
+        return;
+      }
     }
 
     if (step === 4 && !isIncludedWithPlan && !price) {
@@ -498,7 +559,7 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
       return;
     }
 
-    if (step === 6) {
+    if ((step === 5 && isIncludedWithPlan) || step === 6) {
       await handleSave(false);
       return;
     }
@@ -508,7 +569,10 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
 
   const goPrevious = () => {
     setError("");
-    setStep((current) => Math.max(current - 1, 1));
+    setStep((current) => {
+      if (current === 5 && isIncludedWithPlan) return 3;
+      return Math.max(current - 1, 1);
+    });
   };
 
   const renderStep = () => {
@@ -534,6 +598,7 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
               const plan = plans.find((item) => item.category === placement.category);
               const startingPrice = getTierPrice(plan, 7);
               const active = form.category === placement.category;
+              const benefitStatus = getBenefitStatus(planAdBenefits, placement.category);
 
               return (
                 <button
@@ -547,12 +612,15 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
                   }`}
                 >
                   <PlacementSketch placement={placement} />
-                  <div className="mt-4 flex items-center gap-2">
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
                     <h3 className="text-base font-black text-slate-950">
                       {placement.title}
                     </h3>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${placement.labelClass}`}>
                       {placement.label}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1 text-xs font-bold ${benefitStatus.className}`}>
+                      {benefitStatus.label}
                     </span>
                   </div>
                   <p className="mt-2 text-xs font-medium leading-5 text-slate-500">
@@ -562,8 +630,10 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
                     <div>
                       <p className="text-xs font-semibold text-slate-400">Starting from</p>
                       <p className="text-lg font-black text-blue-600">
-                        {formatCurrency(startingPrice)}
-                        <span className="text-sm font-medium text-slate-500"> / 7 days</span>
+                        {benefitStatus.isAvailable ? "Included" : formatCurrency(startingPrice)}
+                        {benefitStatus.isAvailable ? null : (
+                          <span className="text-sm font-medium text-slate-500"> / 7 days</span>
+                        )}
                       </p>
                     </div>
                     <div className="text-right">
@@ -734,7 +804,7 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {[
               ["Placement", selectedPlacement.title],
-              ["Duration", `${form.durationDays} Days`],
+              ["Duration", isIncludedWithPlan ? "Until plan expiry" : `${form.durationDays} Days`],
               ["Total", formatCurrency(total)],
               ...(isIncludedWithPlan ? [["Plan Benefit", `${selectedPlanBenefit.remaining} remaining`]] : []),
             ].map(([label, value]) => (
@@ -771,7 +841,7 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
               {[
                 ["Advertisement", form.name || selectedPlacement.title],
                 ["Placement", selectedPlacement.title],
-                ["Duration", `${form.durationDays} Days`],
+                ["Duration", isIncludedWithPlan ? "Until plan expiry" : `${form.durationDays} Days`],
                 ["Ad Fee", isIncludedWithPlan ? "Included with dealer plan" : formatCurrency(effectivePrice)],
                 ["VAT (5%)", formatCurrency(vat)],
               ].map(([label, value]) => (
@@ -921,7 +991,15 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
             disabled={saving || loading}
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-5 text-xs font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 disabled:opacity-60"
           >
-            {saving ? "Submitting..." : step === 6 ? "Submit for Review" : step === wizardSteps.length ? "Go to My Ads" : "Next"}
+            {saving
+              ? "Submitting..."
+              : step === 5 && isIncludedWithPlan
+              ? "Submit for Review"
+              : step === 6
+              ? "Submit for Review"
+              : step === wizardSteps.length
+              ? "Go to My Ads"
+              : "Next"}
             <ArrowRight size={17} />
           </button>
         </footer>

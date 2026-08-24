@@ -10,6 +10,7 @@ export default function ComparePlansTable({ plans = [] }) {
       { label: "Listing Duration", key: "listingDuration" },
       { label: "Active Listings", key: "activeListingCount" },
       { label: "Homepage Banners", key: "homepageBanner" },
+      { label: "Listing Banners", key: "listingBanner" },
       { label: "Large Ads Space", key: "largeAdsSpace" },
       { label: "Small Ads Space", key: "smallAdsSpace" },
       { label: "Maximum Photos", key: "maxPhotos" },

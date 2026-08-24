@@ -6,6 +6,7 @@ export default function CurrentPlanBanner({ plan }) {
   const isPendingActivation = plan.status === "PENDING_ACTIVATION" || !plan.startDate || !plan.endDate;
   const adSlots = [
     { label: "Homepage", value: plan.homepageBanner ?? plan.plan?.homepageBanner },
+    { label: "Listing banner", value: plan.listingBanner ?? plan.plan?.listingBanner },
     { label: "Large ads", value: plan.largeAdsSpace ?? plan.plan?.largeAdsSpace },
     { label: "Small ads", value: plan.smallAdsSpace ?? plan.plan?.smallAdsSpace },
   ].filter((item) => item.value !== null && item.value !== undefined);

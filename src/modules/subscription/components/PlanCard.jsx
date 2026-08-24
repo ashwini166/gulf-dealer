@@ -63,6 +63,12 @@ export default function PlanCard({ plan, isCurrent, onSelect }) {
           </li>
         )}
 
+        {plan.listingBanner !== null && plan.listingBanner !== undefined && (
+          <li className={isPremium ? "text-slate-300" : "text-slate-600"}>
+            • {plan.listingBanner} Listing Banner{Number(plan.listingBanner) === 1 ? "" : "s"}
+          </li>
+        )}
+
         {plan.largeAdsSpace !== null && plan.largeAdsSpace !== undefined && (
           <li className={isPremium ? "text-slate-300" : "text-slate-600"}>
             • {plan.largeAdsSpace} Large Ads Space
