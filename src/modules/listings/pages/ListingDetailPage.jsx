@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, Loader2, Trash2 } from "lucide-react";
+import { Check, Loader2, Star, Trash2 } from "lucide-react";
 
 import { getListingDetailApi } from "../api/listingDetailApi";
 import { listingsApi } from "../api/listingsApi";
@@ -15,13 +15,12 @@ import { caravanFormConfig } from "../config/categoryForms/caravanForm.config";
 import { specialNumberFormConfig } from "../config/categoryForms/specialNumberForm.config";
 import PlateSummary from "../components/detail/PlateSummary";
 
-import ListingHeroGallery from "../components/detail/ListingHeroGallery";
-import ListingHeaderStats from "../components/detail/ListingHeaderStats";
 import EditableFieldSection from "../components/detail/EditableFieldSection";
 import FeaturesDisplay from "../components/detail/FeaturesDisplay";
 import CustomerInquiries from "../components/detail/CustomerInquiries";
 import SellerInfoCard from "../components/detail/SellerInfoCard";
 import { submitSingleBulkListingApi } from "../api/bulkListingApi";
+import heroImage from "../../../assets/hero.png";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -33,9 +32,216 @@ const configByFormType = {
   SPECIAL_NUMBER: specialNumberFormConfig,
 };
 
+const statusConfig = {
+  DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-600" },
+  PENDING_REVIEW: { label: "Pending", className: "bg-amber-100 text-amber-700" },
+  PUBLISHED: { label: "Active", className: "bg-emerald-100 text-emerald-700" },
+  REJECTED: { label: "Rejected", className: "bg-red-100 text-red-700" },
+  EXPIRED: { label: "Expired", className: "bg-slate-200 text-slate-500" },
+};
+
 const EDITABLE_STATUSES = ["DRAFT", "PENDING_REVIEW", "REJECTED"];
 
-const EXCLUDED_VEHICLE_INFO_FIELDS = new Set(["title", "brand", "catalogModel", "manufacturingYear", "description"]);
+const formatLocation = (location = {}) =>
+  [location.city, location.governorate, location.country].filter(Boolean).join(", ");
+
+const formatDaysUsedVsTotal = (listing, now) => {
+  const durationLabel = listing?.planLimitsSnapshot?.listingDurationSnapshot;
+  const totalDays = durationLabel ? parseInt(durationLabel, 10) : 75;
+  const startDate = listing?.publishedAt || listing?.submittedAt || listing?.createdAt;
+
+  if (!startDate || !now) {
+    return { totalDays, daysUsed: 0, percent: 0 };
+  }
+
+  const daysUsed = Math.max(
+    0,
+    Math.ceil((now - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
+  );
+
+  return {
+    totalDays,
+    daysUsed: Math.min(daysUsed, totalDays),
+    percent: Math.min(100, Math.round((daysUsed / totalDays) * 100)),
+  };
+};
+
+const ListingOverviewCard = ({
+  listing,
+  leadsCount,
+  onToggleSold,
+  isTogglingSold,
+  onDelete,
+  onSubmitForReview,
+  isSubmitting,
+}) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [now, setNow] = useState(null);
+  const media = listing?.media || {};
+  const thumbs = [
+    ...(media.featuredImage?.url ? [{ type: "image", url: media.featuredImage.url }] : []),
+    ...(media.images || []).map((image) => ({ type: "image", url: image.url })),
+    ...(media.video?.url ? [{ type: "video", url: media.video.url }] : []),
+  ];
+  const activeMedia = thumbs[activeIndex] || thumbs[0];
+  const vehicleInfo = listing?.vehicleInfo || {};
+  const specs = listing?.specs || {};
+  const pricing = listing?.pricing || {};
+  const status = statusConfig[listing?.status] || statusConfig.DRAFT;
+  const isSold = Boolean(listing?.isSold) || listing?.status === "SOLD";
+  const isFeatured = listing?.addOns?.some((addOn) => /featured/i.test(addOn.planNameSnapshot));
+  const { daysUsed, totalDays, percent } = formatDaysUsedVsTotal(listing, now);
+  const listingAgeDays =
+    listing?.createdAt && now
+      ? Math.max(0, Math.floor((now - new Date(listing.createdAt).getTime()) / (1000 * 60 * 60 * 24)))
+      : 0;
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => setNow(Date.now()), 0);
+
+    return () => window.clearTimeout(timerId);
+  }, []);
+
+  return (
+    <section className="overflow-hidden rounded-[12px] border border-[#e5eaf1] bg-white">
+      <div className="relative h-[196px] overflow-hidden bg-slate-200">
+        {activeMedia?.type === "video" ? (
+          <video src={activeMedia.url} controls className="h-full w-full object-cover" />
+        ) : (
+          <img
+            src={activeMedia?.url || heroImage}
+            alt={vehicleInfo.title || "Vehicle"}
+            className="h-full w-full object-cover"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+        <span className="absolute right-5 top-4 rounded-[8px] bg-slate-950/70 px-3 py-1 text-xs font-black text-white">
+          {listing?.listingNumber || listing?.referenceNumber || "GIC-2026-00042"}
+        </span>
+
+        <div className="absolute bottom-7 left-5">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className={`inline-flex h-6 items-center rounded-full px-3 text-xs font-black ${isSold ? "bg-slate-100 text-slate-700" : status.className}`}>
+              {isSold ? "Sold" : status.label}
+            </span>
+            {isFeatured ? (
+              <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[#2454ef] px-3 text-xs font-black text-white">
+                <Star size={12} fill="currentColor" />
+                Featured
+              </span>
+            ) : null}
+          </div>
+          <h1 className="text-[18px] font-black leading-6 text-white">
+            {vehicleInfo.title || "Untitled Listing"}
+          </h1>
+          <p className="mt-1 text-xs font-semibold text-white/75">
+            {vehicleInfo.manufacturingYear || "2022"} • {(vehicleInfo.mileage || 0).toLocaleString()} km •{" "}
+            {vehicleInfo.fuelType || specs.fuelType || "Petrol"} • GCC Specs
+          </p>
+        </div>
+
+        <div className="absolute bottom-5 right-5 flex items-center gap-1.5">
+          {thumbs.slice(0, 4).map((thumb, index) => (
+            <button
+              key={`${thumb.url}-${index}`}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className={`h-10 w-14 overflow-hidden rounded-[5px] border-2 ${
+                activeIndex === index ? "border-white" : "border-white/30"
+              }`}
+            >
+              {thumb.type === "video" ? (
+                <span className="flex h-full w-full items-center justify-center bg-slate-950 text-[10px] font-black text-white">
+                  VID
+                </span>
+              ) : (
+                <img src={thumb.url} alt="" className="h-full w-full object-cover" />
+              )}
+            </button>
+          ))}
+          {thumbs.length > 4 ? (
+            <span className="flex h-10 w-12 items-center justify-center rounded-[5px] bg-slate-950/70 text-xs font-black text-white">
+              +{thumbs.length - 4}
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid gap-4 px-5 py-4 sm:grid-cols-[180px_1fr]">
+        <div>
+          <p className="text-xs font-semibold text-[#8897ad]">Listing Price</p>
+          <p className="mt-1 text-[22px] font-black leading-none text-[#2454ef]">
+            BHD {Number(pricing.price || 0).toLocaleString()}
+          </p>
+        </div>
+
+        <div className="max-w-[250px]">
+          <div className="flex items-center justify-between text-[11px] font-black text-[#202a3b]">
+            <span className="font-semibold text-[#8897ad]">Listing Duration</span>
+            <span>{isSold ? "Sold" : `${daysUsed}/${totalDays} days`}</span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e9eef8]">
+            <div className="h-full rounded-full bg-[#2454ef]" style={{ width: `${isSold ? 100 : percent}%` }} />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 sm:col-span-2">
+          {isSold ? (
+            <span className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[#dfe5ee] bg-slate-50 px-4 text-xs font-black text-slate-700">
+              <Check size={13} />
+              Sold
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={onToggleSold}
+              disabled={isTogglingSold}
+              className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[#dfe5ee] bg-white px-4 text-xs font-black text-[#202a3b] disabled:opacity-60"
+            >
+              {isTogglingSold ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+              Mark as Sold
+            </button>
+          )}
+
+          {listing.status === "DRAFT" ? (
+            <button
+              type="button"
+              onClick={onSubmitForReview}
+              disabled={isSubmitting}
+              className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#2454ef] px-4 text-xs font-black text-white disabled:opacity-60"
+            >
+              {isSubmitting && <Loader2 size={13} className="animate-spin" />}
+              Submit for Review
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={onDelete}
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-red-100 bg-white px-4 text-xs font-black text-red-500"
+          >
+            <Trash2 size={13} />
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 border-t border-[#edf1f6] min-[620px]:grid-cols-4">
+        {[
+          { label: "Views / Impressions", value: listing?.viewCount?.toLocaleString() || "0", tone: "text-[#2454ef]" },
+          { label: "Clicks / Interactions", value: listing?.interactionsCount || listing?.clickCount || 0, tone: "text-red-500" },
+          { label: "Inquiries / Form Filled", value: leadsCount ?? 0, tone: "text-emerald-600" },
+          { label: "Listing Age", value: isSold ? "Sold" : `${listingAgeDays} Days`, tone: "text-amber-600" },
+        ].map((item) => (
+          <div key={item.label} className="border-r border-[#edf1f6] px-4 py-3 text-center last:border-r-0">
+            <p className={`text-lg font-black leading-6 ${item.tone}`}>{item.value}</p>
+            <p className="text-xs font-semibold text-[#9aa8bd]">{item.label}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
 
 const ListingDetailPage = () => {
   const { listingId } = useParams();
@@ -47,6 +253,7 @@ const ListingDetailPage = () => {
   const [loadError, setLoadError] = useState("");
   const [leadsCount, setLeadsCount] = useState(0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSoldConfirm, setShowSoldConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingSold, setIsTogglingSold] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,20 +281,18 @@ const ListingDetailPage = () => {
     setListing(updatedListing);
   };
 
-  const handleToggleSold = async () => {
+  const handleConfirmSold = async () => {
     setIsTogglingSold(true);
 
     try {
       await listingsApi.toggleSold(listingId);
-      showToast(
-        listing?.isSold ? "Listing unmarked as sold" : "Listing marked as sold",
-        "success"
-      );
+      showToast("Listing marked as sold", "success");
       await fetchListing();
     } catch (error) {
       showToast(error.response?.data?.message || "Unable to update listing", "error");
     } finally {
       setIsTogglingSold(false);
+      setShowSoldConfirm(false);
     }
   };
 
@@ -142,90 +347,91 @@ const ListingDetailPage = () => {
   const config = configByFormType[formType] || carFormConfig;
   const categoryId = listing.category?._id || listing.category;
 
-  const canEdit = EDITABLE_STATUSES.includes(listing.status);
-  const isPublished = listing.status === "PUBLISHED";
-
-  const vehicleInfoFields = config.vehicleInfoFields.filter(
-    (field) => !EXCLUDED_VEHICLE_INFO_FIELDS.has(field.name)
-  );
+  const canEdit = EDITABLE_STATUSES.includes(listing.status) && !listing.isSold;
+  const vehicleInfo = listing.vehicleInfo || {};
+  const specs = listing.specs || {};
+  const features = listing.features || {};
+  const displayVehicleInfo = {
+    ...vehicleInfo,
+    category: listing.category?.name || listing.category?.label || config.label,
+    condition: vehicleInfo.condition || listing.condition || "Used — Excellent",
+    price: `BHD ${Number(listing.pricing?.price || 0).toLocaleString()}`,
+    priceNegotiable: listing.pricing?.isNegotiable ?? listing.pricing?.priceNegotiable,
+    location: formatLocation(listing.location),
+  };
+  const displayVehicleInfoFields = [
+    { name: "title", label: "Listing Title", type: "text" },
+    { name: "bodyType", label: "Body Type", type: "text" },
+    { name: "catalogModel", label: "Model", type: "modelSelect" },
+    { name: "manufacturingYear", label: "Manufacturing Year", type: "text" },
+    { name: "price", label: "Price", type: "text" },
+    { name: "availability", label: "Availability", type: "text" },
+    { name: "category", label: "Category", type: "text" },
+    { name: "brand", label: "Brand", type: "brandSelect" },
+    { name: "variantTrim", label: "Variant", type: "text" },
+    { name: "condition", label: "Condition", type: "text" },
+    { name: "priceNegotiable", label: "Price Negotiable", type: "yesNoSelect" },
+    { name: "location", label: "Location", type: "text" },
+  ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-      <button
-        type="button"
-        onClick={() => navigate("/vehicles")}
-        className="mb-4 flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800"
-      >
-        <ArrowLeft size={14} />
-        My Listings
-      </button>
-
-      <ListingHeroGallery media={listing.media} />
-      <ListingHeaderStats listing={listing} />
-
-      <div className="mt-5 flex flex-wrap gap-3">
-        {isPublished && (
-          <button
-            type="button"
-            onClick={handleToggleSold}
-            disabled={isTogglingSold}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-60 ${
-              listing.isSold
-                ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                : "bg-emerald-600 text-white hover:bg-emerald-700"
-            }`}
-          >
-            {isTogglingSold ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Check size={14} />
-            )}
-            {listing.isSold ? "Unmark as Sold" : "Mark as Sold"}
-          </button>
-        )}
-
-        {listing.status === "DRAFT" && (
-          <button
-            type="button"
-            onClick={handleSubmitForReview}
-            disabled={isSubmitting}
-            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-          >
-            {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-            Submit for Review
-          </button>
-        )}
-
-        {canEdit && (
-          <button
-            type="button"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-          >
-            <Trash2 size={14} />
-            Delete
-          </button>
-        )}
+    <div className="mx-auto max-w-[910px] space-y-[16px] py-4">
+      <div className="pb-2">
+        <h1 className="text-[22px] font-black leading-7 text-[#111827]">My Listings</h1>
+        <button
+          type="button"
+          onClick={() => navigate("/vehicles")}
+          className="mt-1 text-[13px] font-semibold text-[#7d8aa0] hover:text-[#2454ef]"
+        >
+          View all Listings &gt; {vehicleInfo.title || "Listing Detail"}
+        </button>
       </div>
 
-      <div className="mt-6 space-y-5">
+      <ListingOverviewCard
+        listing={listing}
+        leadsCount={leadsCount}
+        isSubmitting={isSubmitting}
+        isTogglingSold={isTogglingSold}
+        onDelete={() => setShowDeleteConfirm(true)}
+        onSubmitForReview={handleSubmitForReview}
+        onToggleSold={() => setShowSoldConfirm(true)}
+      />
+
+      <div className="space-y-[16px]">
         <EditableFieldSection
           title="Vehicle Information"
           step={4}
-          fields={vehicleInfoFields}
-          sourceData={listing.vehicleInfo}
+          fields={config.vehicleInfoFields.filter((field) => field.name !== "description")}
+          displayFields={displayVehicleInfoFields}
+          displaySourceData={displayVehicleInfo}
+          sourceData={vehicleInfo}
           categoryId={categoryId}
           listingId={listingId}
           canEdit={canEdit}
           onSaved={handleSectionSaved}
         />
-        {formType === "SPECIAL_NUMBER" && <PlateSummary vehicleInfo={listing.vehicleInfo} />}
+        {formType === "SPECIAL_NUMBER" && <PlateSummary vehicleInfo={vehicleInfo} />}
 
         <EditableFieldSection
           title={config.engineSectionTitle || `${config.label} Specifications`}
           step={5}
           fields={config.specsFields}
-          sourceData={listing.specs}
+          displayFields={[
+            { name: "mileage", label: "Mileage", type: "number" },
+            { name: "transmission", label: "Transmission", type: "text" },
+            { name: "engineCapacity", label: "Engine Capacity", type: "text" },
+            { name: "doors", label: "Doors", type: "text" },
+            { name: "exteriorColor", label: "Exterior Color", type: "text" },
+            { name: "steeringSide", label: "Steering Side", type: "text" },
+            { name: "fuelType", label: "Fuel Type", type: "text" },
+            { name: "driveType", label: "Drive Type", type: "text" },
+            { name: "horsepower", label: "Horsepower", type: "number" },
+            { name: "seats", label: "Seats", type: "text" },
+            { name: "interiorColor", label: "Interior Color", type: "text" },
+            { name: "vehicleClass", label: "Vehicle Class", type: "text" },
+          ]}
+          displaySourceData={{ ...vehicleInfo, ...specs }}
+          sourceData={specs}
           categoryId={categoryId}
           listingId={listingId}
           canEdit={canEdit}
@@ -236,7 +442,7 @@ const ListingDetailPage = () => {
           title="Description"
           step={4}
           fields={config.vehicleInfoFields.filter((field) => field.name === "description")}
-          sourceData={listing.vehicleInfo}
+          sourceData={vehicleInfo}
           categoryId={categoryId}
           listingId={listingId}
           canEdit={canEdit}
@@ -244,8 +450,7 @@ const ListingDetailPage = () => {
           gridLayout="sm:grid-cols-1"
         />
 
-
-        <FeaturesDisplay config={config} features={listing.features} />
+        <FeaturesDisplay config={config} features={features} />
 
         <CustomerInquiries listingId={listingId} onCountLoaded={setLeadsCount} />
 
@@ -276,6 +481,36 @@ const ListingDetailPage = () => {
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSoldConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-base font-semibold text-slate-900">Mark this listing as sold?</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Once marked as sold, this vehicle will show as sold everywhere and listing duration will no longer be shown.
+            </p>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSoldConfirm(false)}
+                disabled={isTogglingSold}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSold}
+                disabled={isTogglingSold}
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {isTogglingSold ? "Updating..." : "Mark as Sold"}
               </button>
             </div>
           </div>

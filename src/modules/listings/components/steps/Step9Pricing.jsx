@@ -10,12 +10,15 @@ const Step9Pricing = () => {
 
   const existingPricing = listing?.pricing || {};
   const listingType = listing?.listingType;
+  const isBulkListing = Boolean(listing?.isBulkListing);
 
   const [price, setPrice] = useState(
     existingPricing.price !== null && existingPricing.price !== undefined ? String(existingPricing.price) : ""
   );
   const [isNegotiable, setIsNegotiable] = useState(existingPricing.isNegotiable ?? false);
   const [error, setError] = useState("");
+  const [isAccepted, setIsAccepted] = useState(false);
+  const [acceptanceError, setAcceptanceError] = useState("");
 
   const handlePriceChange = (value) => {
     if (value === "" || /^\d*\.?\d{0,3}$/.test(value)) {
@@ -29,6 +32,11 @@ const Step9Pricing = () => {
 
     if (!price || Number.isNaN(numericPrice) || numericPrice <= 0) {
       setError("Please enter a valid price");
+      return;
+    }
+
+    if (isBulkListing && !isAccepted) {
+      setAcceptanceError("Please accept the terms to submit this bulk listing");
       return;
     }
 
@@ -68,6 +76,34 @@ const Step9Pricing = () => {
           onChange={setIsNegotiable}
         />
       </div>
+
+      {isBulkListing && (
+        <div className={`mt-5 rounded-xl border p-3 transition-all duration-200 ${acceptanceError ? "border-red-400 ring-2 ring-red-400 ring-offset-1" : "border-slate-200"}`}>
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={isAccepted}
+              onChange={(e) => {
+                setIsAccepted(e.target.checked);
+                setAcceptanceError("");
+              }}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-slate-600">
+              I confirm that the vehicle information is accurate and I accept the{" "}
+              <a href="/terms-and-conditions" target="_blank" rel="noreferrer" className="font-medium text-blue-600 hover:underline">
+                Terms &amp; Conditions
+              </a>{" "}
+              and{" "}
+              <a href="/privacy-policy" target="_blank" rel="noreferrer" className="font-medium text-blue-600 hover:underline">
+                Listing Policy
+              </a>
+              .
+            </span>
+          </label>
+          {acceptanceError && <p className="mt-2 text-xs font-medium text-red-600">{acceptanceError}</p>}
+        </div>
+      )}
 
       <WizardFooterNav
         onPrevious={goPrevious}

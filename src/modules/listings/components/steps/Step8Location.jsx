@@ -9,6 +9,7 @@ import {
 import FormField from "../FormField";
 import ToggleSwitchField from "../ToggleSwitchField";
 import WizardFooterNav from "../WizardFooterNav";
+import MapLinkPreview from "../MapLinkPreview";
 import { carFormConfig } from "../../config/categoryForms/carForm.config";
 import { commercialFormConfig } from "../../config/categoryForms/commercialForm.config";
 import { heavyEquipmentFormConfig } from "../../config/categoryForms/heavyEquipmentForm.config";
@@ -52,6 +53,7 @@ const Step8Location = () => {
   const [area, setArea] = useState(existingLocation.area || "");
   const [showPhoneNumber, setShowPhoneNumber] = useState(existingLocation.showPhoneNumber ?? true);
   const [showWhatsappNumber, setShowWhatsappNumber] = useState(existingLocation.showWhatsappNumber ?? true);
+  const [mapsLink, setMapsLink] = useState(existingLocation.mapsLink || existingLocation.googleMapsUrl || "");
 
   const [errors, setErrors] = useState({});
 
@@ -79,6 +81,9 @@ const Step8Location = () => {
     if (!governorate) nextErrors.governorate = "City is required";
     if (!city) nextErrors.city = "City/Area is required";
     if (hasAreaField && !area) nextErrors.area = "Area is required";
+    if (mapsLink && !/^https?:\/\/.+/i.test(mapsLink.trim())) {
+      nextErrors.mapsLink = "Enter a valid Google Maps link";
+    }
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -91,6 +96,7 @@ const Step8Location = () => {
         governorate,
         city,
         area: hasAreaField ? area : undefined,
+        mapsLink: mapsLink.trim() || undefined,
         showPhoneNumber,
         showWhatsappNumber,
       });
@@ -138,6 +144,22 @@ const Step8Location = () => {
             />
           </FormField>
         )}
+      </div>
+
+      <div className="mt-4">
+        <FormField label="Google Maps Link" error={errors.mapsLink}>
+          <input
+            type="url"
+            value={mapsLink}
+            onChange={(e) => {
+              setMapsLink(e.target.value);
+              setErrors((previous) => ({ ...previous, mapsLink: "" }));
+            }}
+            placeholder="https://maps.google.com/..."
+            className={inputClass}
+          />
+        </FormField>
+        <MapLinkPreview value={mapsLink} />
       </div>
 
       <div className="mt-5 divide-y divide-slate-100 rounded-xl border border-slate-200 px-4">

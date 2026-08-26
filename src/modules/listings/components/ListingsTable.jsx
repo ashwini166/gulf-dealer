@@ -97,6 +97,7 @@ export default function ListingsTable({
         <tbody className="divide-y divide-slate-100">
           {visibleVehicles.map((v) => {
             const ended = isEnded(v.daysLabel);
+            const isSold = Boolean(v.isSold) || v.status === "SOLD";
             const canFeature = v.status === "PUBLISHED" && !ended;
 
             return (
@@ -140,7 +141,7 @@ export default function ListingsTable({
 
                 {showDays && (
                   <td className={`px-2 py-4 font-semibold ${getDaysColorClass(v.daysLabel, tab)}`}>
-                    {formatDaysLabel(v.daysLabel)}
+                    {isSold ? "Sold" : formatDaysLabel(v.daysLabel)}
                   </td>
                 )}
 
@@ -175,7 +176,7 @@ export default function ListingsTable({
                       <Trash2 size={16} />
                     </button>
 
-                    {showMarkAsSold && (
+                    {showMarkAsSold && !isSold && (
                       <button
                         onClick={() => onToggleSold(v)}
                         className="ml-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
@@ -204,7 +205,7 @@ export default function ListingsTable({
                 {showSoldBadge && (
                   <td className="px-2 py-4">
                     <span className="text-sm font-semibold text-slate-500">
-                      Marked as Sold
+                      Sold
                     </span>
                   </td>
                 )}

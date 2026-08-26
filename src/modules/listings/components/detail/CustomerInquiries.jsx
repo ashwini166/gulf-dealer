@@ -52,10 +52,10 @@ const CustomerInquiries = ({ listingId, onCountLoaded }) => {
   }, [listingId]);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900">Customer Inquiries</h3>
-        <span className="text-xs font-semibold text-blue-600">{totalCount} Total</span>
+    <div className="overflow-hidden rounded-[12px] border border-[#e5eaf1] bg-white">
+      <div className="flex min-h-12 items-center justify-between gap-2 border-b border-[#edf1f6] px-5 py-3">
+        <h3 className="text-[13px] font-black text-[#202a3b]">Customer Inquiries</h3>
+        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-black text-[#2454ef]">{totalCount} Total</span>
       </div>
 
       {isLoading && (
@@ -73,32 +73,32 @@ const CustomerInquiries = ({ listingId, onCountLoaded }) => {
       )}
 
       {!isLoading && leads.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
-                <th className="px-2 py-2 font-medium">Customer</th>
-                <th className="px-2 py-2 font-medium">Date</th>
-                <th className="px-2 py-2 font-medium">Message</th>
-                <th className="px-2 py-2 font-medium">Email</th>
-                <th className="px-2 py-2 font-medium">Mobile Number</th>
+        <div className="overflow-x-auto px-5 py-5">
+          <table className="w-full min-w-[720px] text-left text-xs">
+            <thead className="bg-[#f7f9fc] text-[#8290a5]">
+              <tr>
+                <th className="rounded-l-[8px] px-3 py-3 font-black">Customer</th>
+                <th className="px-3 py-3 font-black">Date</th>
+                <th className="px-3 py-3 font-black">Message</th>
+                <th className="px-3 py-3 font-black">Email</th>
+                <th className="rounded-r-[8px] px-3 py-3 font-black">Mobile Number</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#f1f4f8]">
               {leads.map((lead) => (
                 <tr key={lead._id || lead.id}>
-                  <td className="px-2 py-3">
+                  <td className="px-3 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-[11px] font-semibold text-blue-700">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[10px] font-black text-blue-700">
                         {getInitials(lead.name)}
                       </span>
-                      <span className="font-medium text-slate-800">{lead.name}</span>
+                      <span className="font-black text-[#202a3b]">{lead.name}</span>
                     </div>
                   </td>
-                  <td className="px-2 py-3 text-slate-500">{formatDate(lead.createdAt)}</td>
-                  <td className="max-w-[220px] truncate px-2 py-3 text-slate-600">{lead.message || "—"}</td>
-                  <td className="px-2 py-3 text-slate-600">{lead.email || "—"}</td>
-                  <td className="px-2 py-3 text-slate-600">
+                  <td className="px-3 py-3 font-semibold text-[#7c8aa0]">{formatDate(lead.createdAt)}</td>
+                  <td className="max-w-[220px] truncate px-3 py-3 font-semibold text-[#7c8aa0]">{lead.message || "—"}</td>
+                  <td className="px-3 py-3 font-semibold text-[#7c8aa0]">{lead.email || "—"}</td>
+                  <td className="px-3 py-3 font-semibold text-[#7c8aa0]">
                     {lead.countryCode} {lead.phone}
                   </td>
                 </tr>

@@ -26,6 +26,8 @@ const EditableFieldSection = ({
   title,
   step,
   fields,
+  displayFields,
+  displaySourceData,
   sourceData,
   categoryId,
   listingId,
@@ -34,6 +36,8 @@ const EditableFieldSection = ({
   gridLayout = "sm:grid-cols-2",
 }) => {
   const { showToast } = useToast();
+  const visibleFields = displayFields || fields;
+  const visibleSourceData = displaySourceData || sourceData;
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -144,15 +148,15 @@ const EditableFieldSection = ({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+    <div className="overflow-hidden rounded-[12px] border border-[#e5eaf1] bg-white">
+      <div className="flex min-h-12 items-center justify-between border-b border-[#edf1f6] px-5 py-3">
+        <h3 className="text-[13px] font-black text-[#202a3b]">{title}</h3>
 
         {canEdit && !isEditing && (
           <button
             type="button"
             onClick={handleStartEdit}
-            className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:underline"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#2454ef] hover:underline"
           >
             <Pencil size={13} />
             Edit
@@ -183,8 +187,13 @@ const EditableFieldSection = ({
         )}
       </div>
 
-      <div className={`grid gap-x-6 gap-y-4 ${gridLayout}`}>
-        {fields.map((field) => {
+      {!isEditing && visibleFields.length === 1 && visibleFields[0]?.type === "textarea" ? (
+        <p className="px-5 py-5 text-[13px] font-semibold leading-6 text-[#657387]">
+          {formatDisplayValue(visibleFields[0], visibleSourceData?.[visibleFields[0].name])}
+        </p>
+      ) : (
+      <div className={`grid px-5 py-4 ${isEditing ? "gap-x-6 gap-y-4" : "gap-x-9 gap-y-0"} ${gridLayout}`}>
+        {(isEditing ? fields : visibleFields).map((field) => {
           const isFullWidth = field.span === 2 || field.type === "textarea";
 
           return (
@@ -216,10 +225,10 @@ const EditableFieldSection = ({
                   )}
                 </>
               ) : (
-                <div className="flex items-center justify-between border-b border-slate-50 pb-2 sm:border-0 sm:pb-0">
-                  <span className="text-xs text-slate-400">{field.label}</span>
-                  <span className="text-sm font-semibold text-slate-800">
-                    {formatDisplayValue(field, sourceData?.[field.name])}
+                <div className="flex min-h-9 items-center justify-between gap-5 border-b border-[#f1f4f8] py-1.5">
+                  <span className="text-xs font-semibold text-[#8897ad]">{field.label}</span>
+                  <span className="text-right text-xs font-black text-[#202a3b]">
+                    {formatDisplayValue(field, visibleSourceData?.[field.name])}
                   </span>
                 </div>
               )}
@@ -227,6 +236,7 @@ const EditableFieldSection = ({
           );
         })}
       </div>
+      )}
     </div>
   );
 };

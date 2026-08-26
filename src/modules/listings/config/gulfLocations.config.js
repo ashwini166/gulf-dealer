@@ -17,6 +17,7 @@ export const GULF_COUNTRIES = [
       { name: "Makkah", cities: ["Makkah"] },
       { name: "Madinah", cities: ["Madinah"] },
       { name: "Eastern Province", cities: ["Eastern Province"] },
+      { name: "Al Qassim Region", cities: ["Al Qassim Region"] },
       { name: "Asir", cities: ["Asir"] },
       { name: "Tabuk", cities: ["Tabuk"] },
       { name: "Hail", cities: ["Hail"] },
@@ -112,6 +113,7 @@ export const AREAS_BY_CITY = {
   Dubai: ["Deira", "Jumeirah", "Al Barsha", "Business Bay"],
   "Abu Dhabi": ["Al Reem Island", "Khalifa City", "Al Mushrif"],
   Riyadh: ["Al Olaya", "Al Malaz", "Diplomatic Quarter"],
+  "Al Qassim Region": ["Al Qassim Region"],
   Doha: ["West Bay", "Al Sadd", "The Pearl"],
   "Kuwait City": ["Sharq", "Dasman", "Salmiya"],
 };

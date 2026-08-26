@@ -32,10 +32,12 @@ export default function ListingsPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [deleteVehicle, setDeleteVehicle] = useState(null);
+  const [soldVehicle, setSoldVehicle] = useState(null);
   const navigate = useNavigate();
   const [isCheckingPlan, setIsCheckingPlan] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isMarkingSold, setIsMarkingSold] = useState(false);
   const [statusCounts, setStatusCounts] = useState({});
   const [quickViewVehicle, setQuickViewVehicle] = useState(null);
   const [page, setPage] = useState(1);
@@ -184,13 +186,19 @@ export default function ListingsPage() {
     }
   };
 
-  const handleToggleSold = async (vehicle) => {
+  const confirmMarkSold = async () => {
+    if (!soldVehicle) return;
+
     try {
-      await listingsApi.toggleSold(vehicle._id);
+      setIsMarkingSold(true);
+      await listingsApi.toggleSold(soldVehicle._id);
+      setSoldVehicle(null);
       loadVehicles();
       loadStatusCounts();
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsMarkingSold(false);
     }
   };
 
@@ -303,7 +311,7 @@ export default function ListingsPage() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onToggleFeatured={handleToggleFeatured}
-            onToggleSold={handleToggleSold}
+            onToggleSold={setSoldVehicle}
             onRowClick={setQuickViewVehicle}
           />
 
@@ -326,6 +334,18 @@ export default function ListingsPage() {
           if (!isDeleting) setDeleteVehicle(null);
         }}
         onConfirm={confirmDelete}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(soldVehicle)}
+        title="Mark as sold"
+        message={`Mark "${soldVehicle?.title || "this listing"}" as sold? It will show as sold everywhere, and listing duration/date-limit information will no longer be shown.`}
+        confirmText="Mark as Sold"
+        isLoading={isMarkingSold}
+        onClose={() => {
+          if (!isMarkingSold) setSoldVehicle(null);
+        }}
+        onConfirm={confirmMarkSold}
       />
 
       {quickViewVehicle && (

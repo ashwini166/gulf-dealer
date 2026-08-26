@@ -2,8 +2,12 @@ const FeaturesDisplay = ({ config, features }) => {
   if (!config || !features) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <h3 className="mb-4 text-sm font-semibold text-slate-900">Features &amp; Options</h3>
+    <div className="overflow-hidden rounded-[12px] border border-[#e5eaf1] bg-white">
+      <div className="flex min-h-12 items-center border-b border-[#edf1f6] px-5 py-3">
+        <h3 className="text-[13px] font-black text-[#202a3b]">Features &amp; Options</h3>
+      </div>
+
+      <div className="px-5 py-5">
 
       {config.featureGroups.map((group) => {
         const groupFeatures = features[group.key] || [];
@@ -11,14 +15,14 @@ const FeaturesDisplay = ({ config, features }) => {
 
         return (
           <div key={group.key} className="mb-4 last:mb-0">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="mb-2 text-xs font-black text-[#202a3b]">
               {group.label}
             </p>
             <div className="flex flex-wrap gap-2">
               {groupFeatures.map((feature) => (
                 <span
                   key={feature}
-                  className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+                  className="rounded-[7px] border border-[#e6ebf2] bg-[#f7f9fc] px-3 py-1.5 text-xs font-semibold text-[#657387]"
                 >
                   {feature}
                 </span>
@@ -27,6 +31,7 @@ const FeaturesDisplay = ({ config, features }) => {
           </div>
         );
       })}
+      </div>
     </div>
   );
 };
