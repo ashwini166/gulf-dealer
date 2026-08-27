@@ -3,6 +3,24 @@ export const CAR_COLOR_SWATCHES = [
   "#2563eb", "#0891b2", "#dc2626", "#7c2d12", "#16a34a",
   "#166534", "#ca8a04", "#facc15", "#ea580c", "#7c3aed",
 ];
+const CAR_BODY_TYPES = [
+  "Sedan",
+  "Hatchback",
+  "SUV",
+  "Crossover",
+  "Coupe",
+  "Convertible",
+  "Wagon",
+  "Pickup",
+  "MPV",
+  "Minivan",
+  "Van",
+  "Fastback",
+  "Liftback",
+  "Roadster",
+  "Targa",
+  "Chassis Cab",
+];
 
 export const carFormConfig = {
   key: "CAR",
@@ -14,7 +32,7 @@ export const carFormConfig = {
     { name: "catalogModel", label: "Model", type: "modelSelect", required: true },
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
-    { name: "bodyType", label: "Body Type", type: "select", required: true, options: ["Sedan", "SUV", "Hatchback", "Coupe"] },
+    { name: "bodyType", label: "Body Type", type: "select", required: true, options: CAR_BODY_TYPES },
     { name: "availability", label: "Availability", type: "select", options: ["Available", "Reserved"] },
     { name: "fuelType", label: "Fuel Type", type: "select", required: true, options: ["Petrol", "Diesel", "Hybrid", "Plug-in Hybrid", "Electric"] },
     { name: "transmission", label: "Transmission", type: "select", required: true, options: ["Automatic", "Manual", "CVT", "DCT"] },

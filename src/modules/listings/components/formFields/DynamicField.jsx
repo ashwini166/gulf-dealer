@@ -5,6 +5,7 @@ import ToggleSwitchField from "../ToggleSwitchField";
 import {
   getBrandOptionsApi,
   getCatalogModelOptionsApi,
+  getFacetOptionOptionsApi,
   getVariantOptionsApi,
 } from "../../api/catalogApi";
 import { GULF_COUNTRY_NAMES } from "../../config/gulfLocations.config";
@@ -14,6 +15,13 @@ const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear + 1 - i);
 
 const baseInputClass =
   "h-10 w-full rounded-lg border bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+const dynamicFacetFields = new Set([
+  "bodyType",
+  "vehicleType",
+  "equipmentType",
+  "bikeCategory",
+  "bikeType",
+]);
 
 const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
   const errorClass = error ? "border-red-400 ring-2 ring-red-400 ring-offset-1" : "border-slate-300";
@@ -21,6 +29,10 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
   const [brandOptions, setBrandOptions] = useState([]);
   const [modelOptions, setModelOptions] = useState([]);
   const [variantOptions, setVariantOptions] = useState([]);
+  const [facetOptions, setFacetOptions] = useState([]);
+
+  const shouldLoadFacetOptions =
+    field.type === "select" && dynamicFacetFields.has(field.name);
 
   useEffect(() => {
     if (field.type !== "brandSelect" || !categoryId) return;
@@ -31,7 +43,6 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
 
   useEffect(() => {
     if (field.type !== "modelSelect" || !categoryId || !form?.brand) {
-      setModelOptions([]);
       return;
     }
     getCatalogModelOptionsApi({ category: categoryId, brand: form.brand, status: "ACTIVE" })
@@ -41,7 +52,6 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
 
   useEffect(() => {
     if (field.type !== "variantSelect" || !categoryId || !form?.brand || !form?.catalogModel) {
-      setVariantOptions([]);
       return;
     }
 
@@ -64,6 +74,32 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
       isMounted = false;
     };
   }, [field.type, categoryId, form?.brand, form?.catalogModel]);
+
+  useEffect(() => {
+    if (!shouldLoadFacetOptions || !categoryId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    getFacetOptionOptionsApi({
+      category: categoryId,
+      facetKey: "type",
+      status: "ACTIVE",
+    })
+      .then((data) => {
+        if (isMounted) {
+          setFacetOptions((data || []).map((option) => option.label));
+        }
+      })
+      .catch(() => {
+        if (isMounted) setFacetOptions([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [shouldLoadFacetOptions, categoryId]);
 
   switch (field.type) {
     case "text":
@@ -135,14 +171,21 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
       );
 
     case "select":
-      return (
-        <select value={value ?? ""} onChange={(e) => onChange(e.target.value)} className={`${baseInputClass} ${errorClass}`}>
-          <option value="">Select {field.label.toLowerCase()}</option>
-          {field.options.map((option) => (
-            <option key={option} value={option}>{option}</option>
-          ))}
-        </select>
-      );
+      {
+        const selectOptions =
+          shouldLoadFacetOptions && categoryId && facetOptions.length
+            ? facetOptions
+            : field.options || [];
+
+        return (
+          <select value={value ?? ""} onChange={(e) => onChange(e.target.value)} className={`${baseInputClass} ${errorClass}`}>
+            <option value="">Select {field.label.toLowerCase()}</option>
+            {selectOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        );
+      }
 
     case "yearSelect":
       return (
@@ -178,7 +221,7 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
       return (
         <select value={value ?? ""} onChange={(e) => onChange(e.target.value)} disabled={!form?.brand} className={`${baseInputClass} ${errorClass} disabled:bg-slate-100`}>
           <option value="">Select model</option>
-          {modelOptions.map((model) => (
+          {(categoryId && form?.brand ? modelOptions : []).map((model) => (
             <option key={model._id} value={model._id}>{model.name}</option>
           ))}
         </select>
@@ -193,7 +236,7 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
           className={`${baseInputClass} ${errorClass} disabled:bg-slate-100`}
         >
           <option value="">Select variant</option>
-          {variantOptions.map((variant) => (
+          {(categoryId && form?.brand && form?.catalogModel ? variantOptions : []).map((variant) => (
             <option key={variant._id} value={variant.name}>
               {variant.name}
             </option>

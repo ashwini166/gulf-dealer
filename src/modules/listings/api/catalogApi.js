@@ -21,3 +21,8 @@ export const getVariantOptionsApi = async (params) => {
   const { data } = await apiClient.get(`${BASE_URL}/variants/options`, { params });
   return data.data;
 };
+
+export const getFacetOptionOptionsApi = async (params) => {
+  const { data } = await apiClient.get(`${BASE_URL}/facet-options/options`, { params });
+  return data.data;
+};

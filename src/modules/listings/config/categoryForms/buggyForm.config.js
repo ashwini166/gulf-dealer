@@ -4,6 +4,21 @@ export const BUGGY_COLOR_SWATCHES = [
   "#166534", "#ca8a04", "#facc15", "#ea580c", "#7c3aed",
 ];
 
+const BUGGY_TYPES = [
+  "All-Terrain Vehicle (ATV)",
+  "Amphibious Buggy",
+  "Beach Buggy",
+  "Dune Buggy",
+  "Go-Kart",
+  "Golf Buggy",
+  "Off-Road Buggy",
+  "Recreational Buggy",
+  "Side-by-Side (SxS)",
+  "Sport UTV",
+  "Utility Task Vehicle (UTV)",
+  "Youth ATV",
+];
+
 export const buggyFormConfig = {
   key: "BUGGY",
   label: "Buggy",
@@ -14,7 +29,7 @@ export const buggyFormConfig = {
     { name: "catalogModel", label: "Model", type: "modelSelect", required: true },
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
-    { name: "bodyType", label: "Body Type", type: "select", options: ["Single Seat", "2-Seater", "4-Seater", "Side-by-Side (UTV)"] },
+    { name: "bodyType", label: "Body Type", type: "select", options: BUGGY_TYPES },
     { name: "mileage", label: "Mileage", type: "number", placeholder: "e.g. 3200" },
     { name: "mileageMetric", label: "Mileage Metric", type: "toggle2", options: [
       { value: "KM", label: "KM" },

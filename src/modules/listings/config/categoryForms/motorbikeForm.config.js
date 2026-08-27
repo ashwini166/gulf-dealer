@@ -4,14 +4,43 @@ export const MOTORBIKE_COLOR_SWATCHES = [
   "#166534", "#ca8a04", "#facc15", "#ea580c", "#7c3aed",
 ];
 
+const BIKE_CATEGORIES = [
+  "Sport Bike",
+  "Naked Bike",
+  "Super Sport",
+  "Cruiser",
+  "Touring Bike",
+  "Adventure Bike (ADV)",
+  "Dual Sport",
+  "Enduro",
+  "Motocross",
+  "Dirt Bike",
+  "Supermoto",
+  "Street Bike",
+  "Cafe Racer",
+  "Scrambler",
+  "Bobber",
+  "Chopper",
+  "Scooter",
+  "Maxi Scooter",
+  "Moped",
+  "Underbone",
+  "Electric Motorcycle",
+  "Electric Scooter",
+  "Mini Bike",
+  "Pocket Bike",
+  "ATV / Quad Bike",
+  "Sidecar Motorcycle",
+];
+
 export const motorbikeFormConfig = {
   key: "MOTORBIKE",
   label: "Motorbike",
 
   vehicleInfoFields: [
     { name: "title", label: "Listing Title", type: "text", required: true, span: 2, placeholder: "e.g. 2023 Kawasaki Ninja ZX-10R" },
-    { name: "bikeCategory", label: "Bike Category", type: "select", required: true, options: ["Sport", "Cruiser", "Touring", "Standard", "Off-Road", "Scooter"] },
-    { name: "bikeType", label: "Bike Type", type: "select", required: true, options: ["Sport Bike", "Cruiser", "Touring", "Naked", "Adventure", "Scooter"] },
+    { name: "bikeCategory", label: "Bike Category", type: "select", required: true, options: BIKE_CATEGORIES },
+    { name: "bikeType", label: "Bike Type", type: "select", required: true, options: BIKE_CATEGORIES },
     { name: "brand", label: "Brand", type: "brandSelect", required: true },
     { name: "catalogModel", label: "Model", type: "modelSelect", required: true },
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },

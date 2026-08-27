@@ -4,6 +4,17 @@ export const CARAVAN_COLOR_SWATCHES = [
   "#166534", "#ca8a04", "#facc15", "#ea580c", "#7c3aed",
 ];
 
+const CARAVAN_TYPES = [
+  "Camper Trailer",
+  "Expandable Caravan",
+  "Fifth Wheel",
+  "Off-Road Caravan",
+  "Pop-Top Caravan",
+  "Teardrop Trailer",
+  "Toy Hauler",
+  "Travel Trailer",
+];
+
 export const caravanFormConfig = {
   key: "CARAVAN",
   label: "Caravan",
@@ -14,7 +25,7 @@ export const caravanFormConfig = {
     { name: "catalogModel", label: "Model", type: "modelSelect", required: true },
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
-    { name: "bodyType", label: "Caravan Type", type: "select", options: ["Touring Caravan", "Motorhome", "Camper Trailer", "Fifth Wheel"] },
+    { name: "bodyType", label: "Caravan Type", type: "select", options: CARAVAN_TYPES },
     { name: "mileage", label: "Mileage", type: "number", placeholder: "e.g. 15000" },
     { name: "exteriorColor", label: "Exterior Color", type: "colorSwatch", swatches: CARAVAN_COLOR_SWATCHES, span: 2 },
     { name: "vinNumber", label: "VIN / Chassis Number", type: "vin", span: 2 },
