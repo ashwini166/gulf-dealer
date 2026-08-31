@@ -1,4 +1,5 @@
 import { Check, Star } from "lucide-react";
+import { getServiceCountryCurrencyByName } from "../../config/gulfLocations.config";
 
 const statusConfig = {
   DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-600" },
@@ -32,6 +33,9 @@ const ListingHeaderStats = ({ listing }) => {
   const status = statusConfig[listing?.status] || statusConfig.DRAFT;
   const vehicleInfo = listing?.vehicleInfo || {};
   const pricing = listing?.pricing || {};
+  const selectedCurrency =
+    pricing.currency ||
+    getServiceCountryCurrencyByName(listing?.location?.country);
   const { totalDays, daysUsed, percent } = formatDaysUsedVsTotal(listing);
 
   const listingAgeDays = listing?.createdAt
@@ -70,7 +74,7 @@ const ListingHeaderStats = ({ listing }) => {
         <div>
           <p className="text-xs text-slate-400">Listing Price</p>
           <p className="text-2xl font-bold text-blue-600">
-            BHD {Number(pricing.price || 0).toLocaleString()}
+            {selectedCurrency} {Number(pricing.price || 0).toLocaleString()}
           </p>
         </div>
 

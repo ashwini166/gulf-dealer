@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
+import { getServiceCountryCurrencyByName } from "../../config/gulfLocations.config";
 import FormField from "../FormField";
 import ToggleSwitchField from "../ToggleSwitchField";
 import WizardFooterNav from "../WizardFooterNav";
@@ -9,6 +10,9 @@ const Step9Pricing = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
 
   const existingPricing = listing?.pricing || {};
+  const selectedCurrency =
+    existingPricing.currency ||
+    getServiceCountryCurrencyByName(listing?.location?.country);
   const listingType = listing?.listingType;
   const isBulkListing = Boolean(listing?.isBulkListing);
 
@@ -41,7 +45,11 @@ const Step9Pricing = () => {
     }
 
     try {
-      await saveStep(9, { price: numericPrice, isNegotiable });
+      await saveStep(9, {
+        price: numericPrice,
+        currency: selectedCurrency,
+        isNegotiable,
+      });
     } catch {
       // Error toast already shown by context.
     }
@@ -53,9 +61,19 @@ const Step9Pricing = () => {
       <p className="mt-1 text-sm text-slate-500">Set a competitive price to attract serious buyers.</p>
 
       <div className="mt-5">
-        <FormField label={listingType === "RENT" ? "Rental Price (BHD / day)" : "Listing Price (BHD)"} required error={error}>
+        <FormField
+          label={
+            listingType === "RENT"
+              ? `Rental Price (${selectedCurrency} / day)`
+              : `Listing Price (${selectedCurrency})`
+          }
+          required
+          error={error}
+        >
           <div className={`flex h-11 items-center overflow-hidden rounded-lg border ${error ? "border-red-400" : "border-slate-300"} focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100`}>
-            <span className="border-r border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-500">BHD</span>
+            <span className="border-r border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-500">
+              {selectedCurrency}
+            </span>
             <input
               type="text"
               inputMode="decimal"

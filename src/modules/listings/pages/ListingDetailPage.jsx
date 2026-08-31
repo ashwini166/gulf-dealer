@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { getServiceCountryCurrencyByName } from "../config/gulfLocations.config";
 import { Check, Loader2, Star, Trash2 } from "lucide-react";
 
 import { getListingDetailApi } from "../api/listingDetailApi";
@@ -87,6 +88,9 @@ const ListingOverviewCard = ({
   const vehicleInfo = listing?.vehicleInfo || {};
   const specs = listing?.specs || {};
   const pricing = listing?.pricing || {};
+  const selectedCurrency =
+    pricing.currency ||
+    getServiceCountryCurrencyByName(listing?.location?.country);
   const status = statusConfig[listing?.status] || statusConfig.DRAFT;
   const isSold = Boolean(listing?.isSold) || listing?.status === "SOLD";
   const isFeatured = listing?.addOns?.some((addOn) => /featured/i.test(addOn.planNameSnapshot));
@@ -171,7 +175,7 @@ const ListingOverviewCard = ({
         <div>
           <p className="text-xs font-semibold text-[#8897ad]">Listing Price</p>
           <p className="mt-1 text-[22px] font-black leading-none text-[#2454ef]">
-            BHD {Number(pricing.price || 0).toLocaleString()}
+            {selectedCurrency} {Number(pricing.price || 0).toLocaleString()}
           </p>
         </div>
 
@@ -355,7 +359,7 @@ const ListingDetailPage = () => {
     ...vehicleInfo,
     category: listing.category?.name || listing.category?.label || config.label,
     condition: vehicleInfo.condition || listing.condition || "Used — Excellent",
-    price: `BHD ${Number(listing.pricing?.price || 0).toLocaleString()}`,
+    price: `${selectedCurrency} ${Number(listing.pricing?.price || 0).toLocaleString()}`,
     priceNegotiable: listing.pricing?.isNegotiable ?? listing.pricing?.priceNegotiable,
     location: formatLocation(listing.location),
   };

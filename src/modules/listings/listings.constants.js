@@ -26,8 +26,8 @@ export const LISTING_TABS = [
   },
 ];
 
-export const formatPrice = (price) =>
-  `BHD ${Number(price || 0).toLocaleString()}`;
+export const formatPrice = (price, currency = "BHD") =>
+  `${currency} ${Number(price || 0).toLocaleString()}`;
 
 export const getDaysColorClass = (daysRemaining) => {
   if (daysRemaining === undefined || daysRemaining === null) return "text-slate-600";

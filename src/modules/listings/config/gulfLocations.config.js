@@ -88,6 +88,25 @@ export const GULF_COUNTRIES = [
 
 export const GULF_COUNTRY_NAMES = GULF_COUNTRIES.map((country) => country.name);
 
+const COUNTRY_CURRENCY_MAP = {
+  Bahrain: "BHD",
+  BH: "BHD",
+  "Saudi Arabia": "SAR",
+  SA: "SAR",
+  Kuwait: "KWD",
+  KW: "KWD",
+  "United Arab Emirates": "AED",
+  UAE: "AED",
+  AE: "AED",
+  Oman: "OMR",
+  OM: "OMR",
+  Qatar: "QAR",
+  QA: "QAR",
+};
+
+export const getServiceCountryCurrencyByName = (countryName) =>
+  COUNTRY_CURRENCY_MAP[String(countryName || "").trim()] || "BHD";
+
 export const getServiceCityNamesByCountry = (countryName) =>
   GULF_COUNTRIES.find((country) => country.name === countryName)?.governorates.map(
     (city) => city.name

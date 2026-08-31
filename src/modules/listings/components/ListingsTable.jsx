@@ -2,6 +2,7 @@
 
 import { SquarePen, Trash2 } from "lucide-react";
 import { formatPrice } from "../listings.constants";
+import { getServiceCountryCurrencyByName } from "../config/gulfLocations.config";
 
 function formatDaysLabel(label) {
   if (!label) return "—";
@@ -132,7 +133,12 @@ export default function ListingsTable({
                 </td>
 
                 {showPrice && (
-                  <td className="px-2 py-4 font-semibold">{formatPrice(v.pricing?.price)}</td>
+                  <td className="px-2 py-4 font-semibold">
+                    {formatPrice(
+                      v.pricing?.price,
+                      v.pricing?.currency || getServiceCountryCurrencyByName(v.location?.country)
+                    )}
+                  </td>
                 )}
 
                 {showReason && (
