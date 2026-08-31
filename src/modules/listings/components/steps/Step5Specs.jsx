@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import { carFormConfig } from "../../config/categoryForms/carForm.config";
@@ -10,6 +10,7 @@ import { caravanFormConfig } from "../../config/categoryForms/caravanForm.config
 import { specialNumberFormConfig } from "../../config/categoryForms/specialNumberForm.config";
 import DynamicField from "../formFields/DynamicField";
 import WizardFooterNav from "../WizardFooterNav";
+import { scrollFirstWizardError } from "../../utils/wizardScroll";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -45,16 +46,28 @@ const Step5Specs = () => {
   };
 
   const [form, setForm] = useState(buildInitialForm);
+  const [errors, setErrors] = useState({});
+  const fieldRefs = useRef({});
 
   const handleChange = (fieldName, value) => {
     setForm((previous) => ({ ...previous, [fieldName]: value }));
+    setErrors((previous) => ({ ...previous, [fieldName]: "" }));
   };
 
   const handleNext = async () => {
     const payload = {};
+    const nextErrors = {};
 
     config.specsFields.forEach((field) => {
       const rawValue = form[field.name];
+
+      if (
+        field.required &&
+        field.type !== "toggleSwitch" &&
+        (rawValue === "" || rawValue === null || rawValue === undefined)
+      ) {
+        nextErrors[field.name] = `${field.label} is required`;
+      }
 
       if (field.type === "number") {
         payload[field.name] = rawValue === "" ? null : Number(rawValue);
@@ -66,6 +79,16 @@ const Step5Specs = () => {
         payload[field.name] = rawValue === "" ? undefined : rawValue;
       }
     });
+
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      scrollFirstWizardError(
+        fieldRefs,
+        config.specsFields.map((field) => field.name),
+        nextErrors
+      );
+      return;
+    }
 
     try {
       await saveStep(5, payload);
@@ -88,7 +111,13 @@ const Step5Specs = () => {
           const isFullWidth = field.type === "toggleSwitch" || field.fullWidth;
 
           return (
-            <div key={field.name} className={isFullWidth ? "sm:col-span-2" : ""}>
+            <div
+              key={field.name}
+              ref={(node) => {
+                fieldRefs.current[field.name] = node;
+              }}
+              className={isFullWidth ? "sm:col-span-2" : ""}
+            >
               {field.type !== "toggleSwitch" && (
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">{field.label}</label>
               )}
@@ -96,9 +125,12 @@ const Step5Specs = () => {
                 field={field}
                 value={form[field.name]}
                 onChange={(value) => handleChange(field.name, value)}
-                error={null}
+                error={errors[field.name]}
                 form={form}
               />
+              {errors[field.name] && (
+                <p className="mt-1 text-xs font-medium text-red-600">{errors[field.name]}</p>
+              )}
             </div>
           );
         })}

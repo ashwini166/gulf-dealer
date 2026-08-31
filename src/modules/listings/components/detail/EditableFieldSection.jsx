@@ -8,6 +8,15 @@ import { useToast } from "../../../../context/ToastContext";
 const formatDisplayValue = (field, rawValue) => {
   if (rawValue === undefined || rawValue === null || rawValue === "") return "—";
 
+  if (field.type === "colorSwatch") {
+    const value = String(rawValue);
+    if (value.startsWith("#")) return value;
+    return value
+      .split("-")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
   if (field.type === "toggleSwitch") return rawValue ? "Yes" : "No";
   if (field.type === "yesNoSelect") return rawValue === true || rawValue === "true" ? "Yes" : "No";
   if (field.type === "brandSelect" || field.type === "modelSelect") {

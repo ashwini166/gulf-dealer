@@ -7,6 +7,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
+import LeadResponseActions from "../components/LeadResponseActions";
 import { leadsApi } from "../api/leadsApi";
 
 function initials(name = "") {
@@ -153,11 +154,11 @@ export default function LeadsPage() {
           <table className="w-full table-fixed text-left text-xs xl:text-sm">
             <thead className="bg-slate-50/90 text-slate-500">
               <tr>
-                <th className="w-[24%] px-4 py-4 font-bold">Customer</th>
-                <th className="w-[23%] px-4 py-4 font-bold">Enquiry</th>
-                <th className="w-[24%] px-4 py-4 font-bold">Message</th>
-                <th className="w-[14%] px-4 py-4 font-bold">Mobile</th>
-                <th className="w-[15%] px-4 py-4 font-bold">Email</th>
+                <th className="w-[20%] px-4 py-4 font-bold">Customer</th>
+                <th className="w-[20%] px-4 py-4 font-bold">Enquiry</th>
+                <th className="w-[22%] px-4 py-4 font-bold">Message</th>
+                <th className="w-[18%] px-4 py-4 font-bold">Contact</th>
+                <th className="w-[20%] px-4 py-4 font-bold">Actions</th>
               </tr>
             </thead>
 
@@ -194,11 +195,16 @@ export default function LeadsPage() {
                     <td className="break-words px-4 py-4 align-top font-medium text-slate-400">
                       {lead.message || "Is it available?"}
                     </td>
-                    <td className="break-words px-4 py-4 align-top font-medium text-slate-600">
-                      {lead.mobileNumber || lead.customerPhone || "-"}
+                    <td className="break-words px-4 py-4 align-top">
+                      <p className="font-medium text-slate-600">
+                        {lead.mobileNumber || lead.customerPhone || "-"}
+                      </p>
+                      <p className="mt-1 break-all text-xs font-medium text-slate-400">
+                        {lead.email || "-"}
+                      </p>
                     </td>
-                    <td className="break-all px-4 py-4 align-top font-medium text-slate-600">
-                      {lead.email || "-"}
+                    <td className="px-4 py-4 align-top">
+                      <LeadResponseActions lead={lead} />
                     </td>
                   </tr>
                 ))}

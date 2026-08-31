@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import {
@@ -17,6 +17,7 @@ import { motorbikeFormConfig } from "../../config/categoryForms/motorbikeForm.co
 import { buggyFormConfig } from "../../config/categoryForms/buggyForm.config";
 import { caravanFormConfig } from "../../config/categoryForms/caravanForm.config";
 import { specialNumberFormConfig } from "../../config/categoryForms/specialNumberForm.config";
+import { scrollFirstWizardError } from "../../utils/wizardScroll";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -56,6 +57,7 @@ const Step8Location = () => {
   const [mapsLink, setMapsLink] = useState(existingLocation.mapsLink || existingLocation.googleMapsUrl || "");
 
   const [errors, setErrors] = useState({});
+  const fieldRefs = useRef({});
 
   const governorateOptions = useMemo(() => {
     return GULF_COUNTRIES.find((item) => item.name === country)?.governorates || [];
@@ -87,6 +89,7 @@ const Step8Location = () => {
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      scrollFirstWizardError(fieldRefs, ["country", "governorate", "city", "area", "mapsLink"], nextErrors);
       return;
     }
 
@@ -111,6 +114,7 @@ const Step8Location = () => {
       <p className="mt-1 text-sm text-slate-500">Tell buyers where the vehicle is located.</p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div ref={(node) => { fieldRefs.current.country = node; }}>
         <FormField label="Country" required error={errors.country}>
           <select value={country} onChange={(e) => handleCountryChange(e.target.value)} className={inputClass}>
             <option value="">Select country</option>
@@ -119,7 +123,12 @@ const Step8Location = () => {
             ))}
           </select>
         </FormField>
+        </div>
 
+        <div ref={(node) => {
+          fieldRefs.current.governorate = node;
+          fieldRefs.current.city = node;
+        }}>
         <FormField label="City" required error={errors.governorate || errors.city}>
           <select value={governorate} onChange={(e) => handleGovernorateChange(e.target.value)} disabled={!country} className={inputClass}>
             <option value="">Select city</option>
@@ -128,8 +137,10 @@ const Step8Location = () => {
             ))}
           </select>
         </FormField>
+        </div>
 
         {hasAreaField && (
+          <div ref={(node) => { fieldRefs.current.area = node; }}>
           <FormField label="Area" required error={errors.area}>
             <input
               type="text"
@@ -143,10 +154,11 @@ const Step8Location = () => {
               className={inputClass}
             />
           </FormField>
+          </div>
         )}
       </div>
 
-      <div className="mt-4">
+      <div ref={(node) => { fieldRefs.current.mapsLink = node; }} className="mt-4">
         <FormField label="Google Maps Link" error={errors.mapsLink}>
           <input
             type="url"

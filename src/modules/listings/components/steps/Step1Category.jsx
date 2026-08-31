@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import { getCategoryOptionsApi } from "../../api/catalogApi";
 import CategoryIcon from "../CategoryIcon";
 import WizardFooterNav from "../WizardFooterNav";
+import { scrollElementIntoWizardView } from "../../utils/wizardScroll";
 
 const Step1Category = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
@@ -17,6 +18,7 @@ const Step1Category = () => {
     listing?.category?._id || listing?.category || ""
   );
   const [showValidation, setShowValidation] = useState(false);
+  const categoryGridRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,6 +57,7 @@ const Step1Category = () => {
   const handleNext = async () => {
     if (!selectedCategoryId) {
       setShowValidation(true);
+      scrollElementIntoWizardView(categoryGridRef.current);
       return;
     }
 
@@ -87,6 +90,7 @@ const Step1Category = () => {
       <p className="mt-1 text-sm text-slate-500">Choose the type of vehicle you are listing.</p>
 
       <div
+        ref={categoryGridRef}
         className={`mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 ${
           showValidation && !selectedCategoryId ? "rounded-xl ring-2 ring-red-400 ring-offset-2" : ""
         }`}

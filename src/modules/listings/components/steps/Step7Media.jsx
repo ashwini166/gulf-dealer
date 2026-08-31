@@ -11,6 +11,7 @@ import { motorbikeFormConfig } from "../../config/categoryForms/motorbikeForm.co
 import { buggyFormConfig } from "../../config/categoryForms/buggyForm.config";
 import { caravanFormConfig } from "../../config/categoryForms/caravanForm.config";
 import { specialNumberFormConfig } from "../../config/categoryForms/specialNumberForm.config";
+import { scrollElementIntoWizardView } from "../../utils/wizardScroll";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -63,6 +64,7 @@ const Step7Media = () => {
   const [isDraggingImages, setIsDraggingImages] = useState(false);
 
   const featuredInputRef = useRef(null);
+  const featuredFieldRef = useRef(null);
   const imagesInputRef = useRef(null);
   const videoInputRef = useRef(null);
   const brochureInputRef = useRef(null);
@@ -178,6 +180,7 @@ const Step7Media = () => {
   const handleNext = async () => {
     if (!featuredFile && !existingFeaturedImage) {
       setErrorMessage("Featured image is required");
+      scrollElementIntoWizardView(featuredFieldRef.current);
       return;
     }
 
@@ -210,7 +213,7 @@ const Step7Media = () => {
         </div>
       )}
 
-      <div className="mt-5">
+      <div ref={featuredFieldRef} className="mt-5">
         <p className="mb-2 text-sm font-medium text-slate-700">
           Featured Image <span className="text-red-500">*</span>
         </p>

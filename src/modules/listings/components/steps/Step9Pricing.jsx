@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import { getServiceCountryCurrencyByName } from "../../config/gulfLocations.config";
 import FormField from "../FormField";
 import ToggleSwitchField from "../ToggleSwitchField";
 import WizardFooterNav from "../WizardFooterNav";
+import { scrollElementIntoWizardView } from "../../utils/wizardScroll";
 
 const Step9Pricing = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
@@ -23,6 +24,8 @@ const Step9Pricing = () => {
   const [error, setError] = useState("");
   const [isAccepted, setIsAccepted] = useState(false);
   const [acceptanceError, setAcceptanceError] = useState("");
+  const priceFieldRef = useRef(null);
+  const acceptanceFieldRef = useRef(null);
 
   const handlePriceChange = (value) => {
     if (value === "" || /^\d*\.?\d{0,3}$/.test(value)) {
@@ -36,11 +39,13 @@ const Step9Pricing = () => {
 
     if (!price || Number.isNaN(numericPrice) || numericPrice <= 0) {
       setError("Please enter a valid price");
+      scrollElementIntoWizardView(priceFieldRef.current);
       return;
     }
 
     if (isBulkListing && !isAccepted) {
       setAcceptanceError("Please accept the terms to submit this bulk listing");
+      scrollElementIntoWizardView(acceptanceFieldRef.current);
       return;
     }
 
@@ -60,7 +65,7 @@ const Step9Pricing = () => {
       <h2 className="text-lg font-bold text-slate-950">Pricing</h2>
       <p className="mt-1 text-sm text-slate-500">Set a competitive price to attract serious buyers.</p>
 
-      <div className="mt-5">
+      <div ref={priceFieldRef} className="mt-5">
         <FormField
           label={
             listingType === "RENT"
@@ -96,7 +101,7 @@ const Step9Pricing = () => {
       </div>
 
       {isBulkListing && (
-        <div className={`mt-5 rounded-xl border p-3 transition-all duration-200 ${acceptanceError ? "border-red-400 ring-2 ring-red-400 ring-offset-1" : "border-slate-200"}`}>
+        <div ref={acceptanceFieldRef} className={`mt-5 rounded-xl border p-3 transition-all duration-200 ${acceptanceError ? "border-red-400 ring-2 ring-red-400 ring-offset-1" : "border-slate-200"}`}>
           <label className="flex cursor-pointer items-start gap-2.5">
             <input
               type="checkbox"

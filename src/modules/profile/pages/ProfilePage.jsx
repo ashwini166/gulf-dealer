@@ -22,6 +22,10 @@ const EMPTY_FORM = {
   phone: "",
   email: "",
   category: "",
+  businessType: "",
+  vehicleCategories: [],
+  vehicleBrands: [],
+  vehicleBrandsText: "",
   description: "",
   whatsapp: "",
   website: "",
@@ -35,6 +39,34 @@ const EMPTY_FORM = {
   mapsLink: "",
 };
 
+const BUSINESS_CATEGORY_OPTIONS = [
+  "Showroom",
+  "Dealership",
+  "Rental Company",
+  "Garage",
+  "Accessory Dealer",
+  "Spare Parts Dealer",
+  "Service Provider",
+  "Commercial Vehicle Dealer",
+  "Heavy Equipment Dealer",
+  "Insurance",
+];
+
+const VEHICLE_CATEGORY_OPTIONS = [
+  "Cars",
+  "Motorbikes",
+  "Commercial Vehicles",
+  "Heavy Equipment",
+  "Buggies",
+  "Caravans",
+];
+
+const BUSINESS_TYPE_OPTIONS = [
+  "Individual Dealer",
+  "Multi-Brand Dealer",
+  "Authorized Dealer",
+];
+
 const fieldClass =
   "mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-800 outline-none focus:border-blue-500 disabled:bg-slate-100 disabled:text-slate-400";
 
@@ -47,6 +79,16 @@ const buildFormValues = (profile = {}) => ({
   phone: profile.phone || "",
   email: profile.email || "",
   category: profile.category || "",
+  businessType: profile.businessType || "",
+  vehicleCategories: Array.isArray(profile.vehicleCategories)
+    ? profile.vehicleCategories
+    : [],
+  vehicleBrands: Array.isArray(profile.vehicleBrands)
+    ? profile.vehicleBrands
+    : [],
+  vehicleBrandsText: Array.isArray(profile.vehicleBrands)
+    ? profile.vehicleBrands.join(", ")
+    : "",
   description: profile.description || "",
   whatsapp: profile.whatsapp || "",
   website: profile.website || "",
@@ -98,6 +140,34 @@ function Field({ children, label, locked = false, required = false }) {
   );
 }
 
+function CheckboxGroup({ value = [], onChange, options }) {
+  const selected = Array.isArray(value) ? value : [];
+
+  const toggle = (option) => {
+    onChange(
+      selected.includes(option)
+        ? selected.filter((item) => item !== option)
+        : [...selected, option],
+    );
+  };
+
+  return (
+    <div className="mt-2 grid gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-2">
+      {options.map((option) => (
+        <label key={option} className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-700">
+          <input
+            type="checkbox"
+            checked={selected.includes(option)}
+            onChange={() => toggle(option)}
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span>{option}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 /* -------------------------------------------------------
    PROFILE FORM
 ------------------------------------------------------- */
@@ -115,6 +185,13 @@ function ProfileForm({ initialValues, locks = {}, submitLabel, onSaved }) {
     setForm((current) => ({
       ...current,
       [field]: event.target.value,
+    }));
+  };
+
+  const updateValue = (field, value) => {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
     }));
   };
 
@@ -210,12 +287,61 @@ function ProfileForm({ initialValues, locks = {}, submitLabel, onSaved }) {
       </Field>
 
       <Field label="Business Category">
-        <input
+        <select
           className={fieldClass}
           value={form.category}
           onChange={update("category")}
-        />
+        >
+          <option value="">Select Business Category</option>
+          {BUSINESS_CATEGORY_OPTIONS.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
       </Field>
+
+      <Field label="Business Type">
+        <select
+          className={fieldClass}
+          value={form.businessType}
+          onChange={update("businessType")}
+        >
+          <option value="">Select Business Type</option>
+          {BUSINESS_TYPE_OPTIONS.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      </Field>
+
+      <div className="sm:col-span-2">
+        <Field label="Vehicle Category">
+          <CheckboxGroup
+            value={form.vehicleCategories}
+            onChange={(value) => updateValue("vehicleCategories", value)}
+            options={VEHICLE_CATEGORY_OPTIONS}
+          />
+        </Field>
+      </div>
+
+      <div className="sm:col-span-2">
+        <Field label="Vehicle Brands">
+          <input
+            className={fieldClass}
+            value={form.vehicleBrandsText}
+            onChange={(event) => {
+              const value = event.target.value;
+              setForm((current) => ({
+                ...current,
+                vehicleBrandsText: value,
+                vehicleBrands: value
+                  .split(",")
+                  .map((item) => item.trim())
+                  .filter(Boolean),
+              }));
+            }}
+            placeholder="e.g. Toyota, Nissan, BMW"
+          />
+        </Field>
+      </div>
 
       <Field label="WhatsApp">
         <input

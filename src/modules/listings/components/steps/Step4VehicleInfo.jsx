@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import useAuth from "../../../auth/hooks/useAuth";
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import { carFormConfig } from "../../config/categoryForms/carForm.config";
 import { commercialFormConfig } from "../../config/categoryForms/commercialForm.config";
@@ -12,6 +13,8 @@ import DynamicField from "../formFields/DynamicField";
 import FormField from "../FormField";
 import WizardFooterNav from "../WizardFooterNav";
 import PlateSummary from "../detail/PlateSummary";
+import { scrollFirstWizardError } from "../../utils/wizardScroll";
+import { normalizePhoneContact, validatePhoneContact } from "../../utils/phoneNumber";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -25,12 +28,22 @@ const configByFormType = {
 
 const Step4VehicleInfo = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
+  const { user } = useAuth();
 
   const categoryId = listing?.category?._id || listing?.category;
   const formType = listing?.category?.vehicleFormType || "CAR";
   const config = configByFormType[formType] || carFormConfig;
 
   const existingInfo = listing?.vehicleInfo || {};
+  const dealerProfile = user?.dealerProfile || user?.dealer || {};
+  const accountSellerName =
+    dealerProfile.businessName ||
+    user?.businessName ||
+    user?.dealerName ||
+    user?.fullName ||
+    user?.name ||
+    "";
+  const accountPhone = `${user?.countryCode || ""} ${user?.phone || ""}`.trim();
 
   const buildInitialForm = () => {
     const initial = {};
@@ -41,6 +54,10 @@ const Step4VehicleInfo = () => {
         initial[field.name] = existingInfo.catalogModel?._id || existingInfo.catalogModel || "";
       } else if (field.type === "toggleSwitch") {
         initial[field.name] = existingInfo[field.name] ?? false;
+      } else if (field.name === "sellerName") {
+        initial[field.name] = existingInfo[field.name] || accountSellerName;
+      } else if (field.type === "phone") {
+        initial[field.name] = existingInfo[field.name] || accountPhone;
       } else {
         initial[field.name] = existingInfo[field.name] ?? "";
       }
@@ -52,6 +69,21 @@ const Step4VehicleInfo = () => {
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
 
+  useEffect(() => {
+    if (!accountSellerName && !accountPhone) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setForm((previous) => ({
+        ...previous,
+        sellerName: previous.sellerName || accountSellerName,
+        mobileNumber: previous.mobileNumber || accountPhone,
+        whatsappNumber: previous.whatsappNumber || accountPhone,
+      }));
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [accountPhone, accountSellerName]);
+
   const handleChange = (fieldName, value) => {
     setForm((previous) => {
       const next = { ...previous, [fieldName]: value };
@@ -60,19 +92,15 @@ const Step4VehicleInfo = () => {
         next.variantTrim = "";
       }
       if (fieldName === "catalogModel") next.variantTrim = "";
+      if (fieldName === "mobileNumber" && previous.whatsappAvailable) next.whatsappNumber = value;
+      if (fieldName === "whatsappAvailable" && value) next.whatsappNumber = previous.mobileNumber || "";
       return next;
     });
-    setErrors((previous) => ({ ...previous, [fieldName]: "" }));
-  };
-
-  const scrollToFirstError = (nextErrors) => {
-    const firstErrorField = config.vehicleInfoFields.find((field) => nextErrors[field.name]);
-    if (firstErrorField) {
-      const node = fieldRefs.current[firstErrorField.name];
-      if (node) {
-        node.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }
+    setErrors((previous) => ({
+      ...previous,
+      [fieldName]: "",
+      ...(fieldName === "mobileNumber" || fieldName === "whatsappAvailable" ? { whatsappNumber: "" } : {}),
+    }));
   };
 
   const validate = () => {
@@ -81,6 +109,16 @@ const Step4VehicleInfo = () => {
     config.vehicleInfoFields.forEach((field) => {
       if (field.required && !form[field.name]) {
         nextErrors[field.name] = `${field.label} is required`;
+      }
+
+      if (field.type === "phone") {
+        const fieldValue = field.name === "whatsappNumber" && form.whatsappAvailable
+          ? form.mobileNumber
+          : form[field.name];
+        const phoneError = validatePhoneContact(fieldValue, field.label);
+        if (field.required || fieldValue) {
+          if (phoneError) nextErrors[field.name] = phoneError;
+        }
       }
     });
 
@@ -91,7 +129,11 @@ const Step4VehicleInfo = () => {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      scrollToFirstError(nextErrors);
+      scrollFirstWizardError(
+        fieldRefs,
+        config.vehicleInfoFields.map((field) => field.name),
+        nextErrors
+      );
     }
 
     return Object.keys(nextErrors).length === 0;
@@ -101,6 +143,12 @@ const Step4VehicleInfo = () => {
     if (!validate()) return;
 
     const payload = { ...form };
+    if (payload.whatsappAvailable) payload.whatsappNumber = payload.mobileNumber;
+    config.vehicleInfoFields.forEach((field) => {
+      if (field.type === "phone" && payload[field.name]) {
+        payload[field.name] = normalizePhoneContact(payload[field.name]);
+      }
+    });
 
     if (payload.manufacturingYear) payload.manufacturingYear = Number(payload.manufacturingYear);
     if (payload.mileage !== undefined && payload.mileage !== "") payload.mileage = Number(payload.mileage);

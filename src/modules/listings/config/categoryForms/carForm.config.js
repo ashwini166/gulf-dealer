@@ -1,8 +1,95 @@
-export const CAR_COLOR_SWATCHES = [
-  "#ffffff", "#0f172a", "#64748b", "#94a3b8", "#1e3a8a",
-  "#2563eb", "#0891b2", "#dc2626", "#7c2d12", "#16a34a",
-  "#166534", "#ca8a04", "#facc15", "#ea580c", "#7c3aed",
+const CAR_EXTERIOR_COLOR_OPTIONS = [
+  "Black",
+  "White",
+  "Silver",
+  "Grey",
+  "Blue",
+  "Red",
+  "Green",
+  "Yellow",
+  "Orange",
+  "Brown",
+  "Beige",
+  "Gold",
+  "Bronze",
+  "Purple",
+  "Pink",
+  "Burgundy",
+  "Champagne",
+  "Ivory",
+  "Pearl White",
+  "Matte Black",
+  "Matte Grey",
+  "Dark Blue",
+  "Dark Green",
+  "Maroon",
+  "Nardo Grey",
+  "Two-Tone",
+  "Other",
 ];
+
+const getBodyColorSlug = (value) =>
+  String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+export const CAR_COLOR_SWATCHES = CAR_EXTERIOR_COLOR_OPTIONS.map((label) => {
+  const value = getBodyColorSlug(label);
+
+  return {
+    value,
+    label,
+  };
+});
+
+const CAR_INTERIOR_COLOR_OPTIONS = [
+  "Black",
+  "Charcoal",
+  "Grey",
+  "Light Grey",
+  "White",
+  "Ivory",
+  "Cream",
+  "Beige",
+  "Sand",
+  "Tan",
+  "Brown",
+  "Dark Brown",
+  "Mocha",
+  "Cognac",
+  "Camel",
+  "Saddle Brown",
+  "Burgundy",
+  "Red",
+  "Blue",
+  "Navy Blue",
+  "Green",
+  "Olive",
+  "Orange",
+  "Yellow",
+  "Purple",
+  "Pink",
+  "Two-Tone",
+  "Other",
+];
+
+const CAR_SEAT_UPHOLSTERY_OPTIONS = [
+  "Fabric",
+  "Premium Fabric",
+  "Leather",
+  "Premium Leather",
+  "Nappa Leather",
+  "Semi-Aniline Leather",
+  "Synthetic Leather",
+  "Alcantara",
+  "Suede",
+  "Vinyl",
+  "Cloth",
+  "Mixed Material",
+  "Other",
+];
+
 const CAR_BODY_TYPES = [
   "Sedan",
   "Hatchback",
@@ -25,6 +112,25 @@ const CAR_BODY_TYPES = [
 export const carFormConfig = {
   key: "CAR",
   label: "Car",
+  engineSectionTitle: "Vehicle Specifications",
+
+  detailDisplayFields: [
+    { name: "mileage", source: "vehicleInfo" },
+    { name: "doors", source: "specs" },
+    { name: "fuelType", source: "vehicleInfo" },
+    { name: "seats", source: "specs" },
+    { name: "transmission", source: "vehicleInfo" },
+    { name: "exteriorColor", source: "vehicleInfo" },
+    { name: "driveType", source: "specs" },
+    { name: "interiorColor", source: "vehicleInfo" },
+    { name: "engineCapacity", source: "vehicleInfo" },
+    { name: "seatUpholstery", source: "vehicleInfo" },
+    { name: "engineType", source: "specs" },
+    { name: "steeringSide", source: "specs" },
+    { name: "horsepower", source: "specs" },
+    { name: "vehicleClass", source: "specs" },
+    { name: "numberOfCylinders", source: "specs" },
+  ],
 
   vehicleInfoFields: [
     { name: "title", label: "Vehicle Title", type: "text", required: true, span: 2, placeholder: "e.g. 2023 Toyota Land Cruiser GXR V8" },
@@ -33,25 +139,30 @@ export const carFormConfig = {
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
     { name: "bodyType", label: "Body Type", type: "select", required: true, options: CAR_BODY_TYPES },
+    { name: "sellerName", label: "Seller Name", type: "text", required: true, placeholder: "e.g. Ahmed Al Rashid" },
     { name: "availability", label: "Availability", type: "select", options: ["Available", "Reserved"] },
     { name: "fuelType", label: "Fuel Type", type: "select", required: true, options: ["Petrol", "Diesel", "Hybrid", "Plug-in Hybrid", "Electric"] },
     { name: "transmission", label: "Transmission", type: "select", required: true, options: ["Automatic", "Manual", "CVT", "DCT"] },
     { name: "engineCapacity", label: "Engine Capacity", type: "text", placeholder: "e.g. 4600" },
     { name: "mileage", label: "Mileage", type: "number", required: true, placeholder: "e.g. 12000" },
-    { name: "exteriorColor", label: "Exterior Color", type: "colorSwatch", swatches: CAR_COLOR_SWATCHES, span: 2 },
-    { name: "interiorColor", label: "Interior Color", type: "colorSwatch", swatches: CAR_COLOR_SWATCHES, span: 2 },
-    { name: "seatUpholstery", label: "Seat Upholstery", type: "select", options: ["Fabric", "Leather", "Premium Leather", "Alcantara"] },
+    { name: "exteriorColor", label: "Exterior Color", type: "colorSwatch", required: true, swatches: CAR_COLOR_SWATCHES, span: 2 },
+    { name: "interiorColor", label: "Interior Color", type: "colorSwatch", swatches: CAR_INTERIOR_COLOR_OPTIONS },
+    { name: "seatUpholstery", label: "Seat Upholstery", type: "select", options: CAR_SEAT_UPHOLSTERY_OPTIONS },
     { name: "vinNumber", label: "VIN Number", type: "vin", span: 2 },
     { name: "registrationExpiry", label: "Registration Expiry", type: "date" },
     { name: "registrationCountry", label: "Registration Country", type: "countrySelect" },
     { name: "companyName", label: "Company Name", type: "text", placeholder: "e.g. Al Rashid Motors", dealerOnly: true },
-    { name: "description", label: "Vehicle Description", type: "textarea", span: 2, placeholder: "Describe the vehicle's condition, history, and standout features..." },
-    { name: "hasLoanOption", label: "Available on Loan", description: "Buyer can apply for financing on this vehicle", type: "toggleSwitch", fullWidth: true },
+    { name: "mobileNumber", label: "Mobile Number", type: "phone", required: true, placeholder: "7767754397" },
+    { name: "whatsappNumber", label: "WhatsApp Number", type: "phone", required: true, placeholder: "7767754397" },
+    { name: "whatsappAvailable", label: "WhatsApp available on mobile number", type: "toggleSwitch", fullWidth: true, description: "Turn on to use the same mobile number for WhatsApp." },
+    { name: "contactEmail", label: "Contact Email Address", type: "email", required: true, placeholder: "e.g. seller@example.com" },
+    { name: "description", label: "Vehicle Description", type: "textarea", required: true, span: 2, placeholder: "Describe the vehicle's condition, history, and standout features..." },
+    { name: "hasLoanOption", label: "Available on Loan", description: "Buyer can apply for financing on this vehicle", type: "toggleSwitch", span: 2 },
   ],
 
   specsFields: [
     { name: "driveType", label: "Drive Type", type: "select", options: ["FWD", "RWD", "AWD", "4WD"] },
-    { name: "engineType", label: "Engine Type", type: "select", options: ["Inline-4", "V6", "V8", "V10", "V12", "Electric Motor"] },
+    { name: "engineType", label: "Engine Type", type: "select", options: ["Inline/Straight", "V-type", "Flat/Boxer", "Rotary", "W-type", "Other"] },
     { name: "horsepower", label: "Horsepower", type: "number", placeholder: "e.g. 304" },
     { name: "numberOfCylinders", label: "Number of Cylinders", type: "select", options: ["2", "3", "4", "5", "6", "8", "10", "12", "16"] },
     { name: "doors", label: "Doors", type: "select", options: ["2", "4"] },
@@ -73,9 +184,9 @@ export const carFormConfig = {
   ],
 
   featureGroups: [
-    { key: "comfort", label: "Comfort Features", options: ["Sunroof", "Panoramic Sunroof", "Heated Front Seats", "Ventilated Seats", "Power Seats", "Leather Seats", "Rear AC Vents", "Multi-zone Climate Control", "Auto-Dimming Mirror", "Power Trunk", "Heated Steering Wheel", "Wireless Charging"] },
-    { key: "safety", label: "Safety Features", options: ["Pre-Collision System", "Lane Departure Alert", "Blind Spot Monitor", "Rear Cross Traffic Alert", "Airbags", "ABS", "Electronic Brake Distribution", "Hill Descent Control", "ISOFIX", "Emergency Brake Assist", "Adaptive Cruise Control"] },
-    { key: "exterior", label: "Exterior Features", options: ["LED Headlamps", "LED Daytime Running Lights", "Alloy Wheels", "20\" Alloy Wheels", "Power Folding Mirrors", "Roof Rails", "Running Boards", "Side Steps", "Shark Fin Antenna", "Chrome Package", "Carbon Fibre Trim", "Panoramic Moonroof"] },
-    { key: "performance", label: "Performance Features", options: ["4WD System", "Crawl Control", "Multi-Terrain Select", "Active Height Control", "Kinetic Dynamic Suspension", "Launch Control", "Sport Mode", "Paddle Shifters", "Adaptive Suspension", "Active Exhaust", "Limited Slip Differential"] },
+    { key: "comfort", label: "Comfort Features", options: ["Air Conditioning", "Automatic Climate Control", "Rear Air Conditioning", "Leather Seats", "Fabric Seats", "Power Seats", "Heated Seats", "Ventilated Seats", "Memory Seats", "Keyless Entry", "Push Button Start", "Remote Engine Start", "Power Windows", "Power Door Locks", "Power Tailgate", "Sunroof", "Panoramic Sunroof", "Cruise Control", "Adaptive Cruise Control", "Steering Wheel Controls", "Wireless Charger", "Navigation System", "Apple CarPlay", "Android Auto", "Bluetooth", "Touchscreen Display", "Digital Instrument Cluster", "Premium Sound System", "Rear Seat Entertainment", "Head-Up Display"] },
+    { key: "safety", label: "Safety Features", options: ["ABS (Anti-lock Braking System)", "Airbags", "Electronic Stability Control (ESC)", "Traction Control", "Hill Start Assist", "Hill Descent Control", "Rear Parking Sensors", "Front Parking Sensors", "360 Camera", "Reverse Camera", "Blind Spot Monitoring", "Lane Departure Warning", "Lane Keeping Assist", "Forward Collision Warning", "Automatic Emergency Braking", "Adaptive Cruise Control", "Traffic Sign Recognition", "Driver Attention Monitor", "Tire Pressure Monitoring System (TPMS)", "ISOFIX Child Seat Anchors"] },
+    { key: "exterior", label: "Exterior Features", options: ["Alloy Wheels", "LED Headlights", "LED Daytime Running Lights", "Fog Lights", "Automatic Headlights", "Power Folding Mirrors", "Roof Rails", "Rear Spoiler", "Tinted Windows", "Tow Hitch"] },
+    { key: "performance", label: "Performance Features", options: ["Turbocharged Engine", "Supercharged Engine", "Hybrid", "Plug-in Hybrid", "Electric Vehicle", "All-Wheel Drive (AWD)", "Four-Wheel Drive (4WD)", "Rear-Wheel Drive (RWD)", "Front-Wheel Drive (FWD)", "Air Suspension", "Drive Mode Selector", "Paddle Shifters"] },
   ],
 };

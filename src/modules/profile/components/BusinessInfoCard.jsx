@@ -1,4 +1,4 @@
-import { Building2, Globe, Mail, MapPin, Phone, User } from "lucide-react";
+import { Building2, Car, Globe, Mail, MapPin, Phone, Tag, User } from "lucide-react";
 
 function Row({ icon: Icon, label, value }) {
   if (!value) return null;
@@ -16,6 +16,13 @@ function Row({ icon: Icon, label, value }) {
 }
 
 export default function BusinessInfoCard({ profile }) {
+  const vehicleCategories = Array.isArray(profile.vehicleCategories)
+    ? profile.vehicleCategories.join(", ")
+    : "";
+  const vehicleBrands = Array.isArray(profile.vehicleBrands)
+    ? profile.vehicleBrands.join(", ")
+    : "";
+
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
       <h3 className="mb-2 text-lg font-bold">Business Information</h3>
@@ -31,6 +38,30 @@ export default function BusinessInfoCard({ profile }) {
           icon={User}
           label="Owner Name"
           value={profile.ownerName}
+        />
+
+        <Row
+          icon={Tag}
+          label="Business Category"
+          value={profile.category}
+        />
+
+        <Row
+          icon={Building2}
+          label="Business Type"
+          value={profile.businessType}
+        />
+
+        <Row
+          icon={Car}
+          label="Vehicle Categories"
+          value={vehicleCategories}
+        />
+
+        <Row
+          icon={Car}
+          label="Vehicle Brands"
+          value={vehicleBrands}
         />
 
         <Row

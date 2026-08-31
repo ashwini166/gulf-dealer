@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
+import LeadResponseActions from "../../../leads/components/LeadResponseActions";
 import { leadsApi } from "../../../leads/api/leadsApi";
 
 const formatDate = (value) => {
@@ -74,14 +75,15 @@ const CustomerInquiries = ({ listingId, onCountLoaded }) => {
 
       {!isLoading && leads.length > 0 && (
         <div className="overflow-x-auto px-5 py-5">
-          <table className="w-full min-w-[720px] text-left text-xs">
+          <table className="w-full min-w-[860px] text-left text-xs">
             <thead className="bg-[#f7f9fc] text-[#8290a5]">
               <tr>
                 <th className="rounded-l-[8px] px-3 py-3 font-black">Customer</th>
                 <th className="px-3 py-3 font-black">Date</th>
                 <th className="px-3 py-3 font-black">Message</th>
                 <th className="px-3 py-3 font-black">Email</th>
-                <th className="rounded-r-[8px] px-3 py-3 font-black">Mobile Number</th>
+                <th className="px-3 py-3 font-black">Mobile Number</th>
+                <th className="rounded-r-[8px] px-3 py-3 font-black">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#f1f4f8]">
@@ -90,16 +92,21 @@ const CustomerInquiries = ({ listingId, onCountLoaded }) => {
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-2">
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[10px] font-black text-blue-700">
-                        {getInitials(lead.name)}
+                        {getInitials(lead.customerName || lead.name)}
                       </span>
-                      <span className="font-black text-[#202a3b]">{lead.name}</span>
+                      <span className="font-black text-[#202a3b]">
+                        {lead.customerName || lead.name || "Unknown"}
+                      </span>
                     </div>
                   </td>
                   <td className="px-3 py-3 font-semibold text-[#7c8aa0]">{formatDate(lead.createdAt)}</td>
                   <td className="max-w-[220px] truncate px-3 py-3 font-semibold text-[#7c8aa0]">{lead.message || "—"}</td>
                   <td className="px-3 py-3 font-semibold text-[#7c8aa0]">{lead.email || "—"}</td>
                   <td className="px-3 py-3 font-semibold text-[#7c8aa0]">
-                    {lead.countryCode} {lead.phone}
+                    {lead.mobileNumber || lead.customerPhone || lead.phone || "—"}
+                  </td>
+                  <td className="px-3 py-3">
+                    <LeadResponseActions lead={lead} />
                   </td>
                 </tr>
               ))}

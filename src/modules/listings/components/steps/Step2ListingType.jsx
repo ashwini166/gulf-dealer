@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Tag, RefreshCw } from "lucide-react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import WizardFooterNav from "../WizardFooterNav";
+import { scrollElementIntoWizardView } from "../../utils/wizardScroll";
 
 const listingTypeOptions = [
   { value: "SALE", label: "For Sale", description: "List your vehicle as a one-time purchase for interested buyers.", icon: Tag },
@@ -15,11 +16,41 @@ const conditionOptions = [
   { value: "CERTIFIED", label: "Certified" },
 ];
 
+const conditionOptionsByFormType = {
+  CAR: [
+    { value: "NEW", label: "New" },
+    { value: "USED", label: "Used" },
+    { value: "CERTIFIED", label: "Certified Used" },
+  ],
+  COMMERCIAL: [
+    { value: "NEW", label: "Brand New" },
+    { value: "USED", label: "Used" },
+  ],
+  HEAVY_EQUIPMENT: [
+    { value: "NEW", label: "Brand New" },
+    { value: "USED", label: "Used" },
+  ],
+  MOTORBIKE: [
+    { value: "NEW", label: "New" },
+    { value: "USED", label: "Used" },
+  ],
+  BUGGY: [
+    { value: "NEW", label: "New" },
+    { value: "USED", label: "Used" },
+  ],
+  CARAVAN: [
+    { value: "NEW", label: "New" },
+    { value: "USED", label: "Used" },
+  ],
+};
+
 const Step2ListingType = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
 
   const formType = listing?.category?.vehicleFormType || "CAR";
   const isSpecialNumber = formType === "SPECIAL_NUMBER";
+  const activeConditionOptions =
+    conditionOptionsByFormType[formType] || conditionOptions;
 
   const activeListingTypeOptions = isSpecialNumber
     ? [
@@ -34,6 +65,8 @@ const Step2ListingType = () => {
   );
   const [condition, setCondition] = useState(listing?.condition || "");
   const [showValidation, setShowValidation] = useState({ listingType: false, condition: false });
+  const listingTypeRef = useRef(null);
+  const conditionRef = useRef(null);
 
   const handleNext = async () => {
     const nextValidation = {
@@ -43,6 +76,9 @@ const Step2ListingType = () => {
 
     if (nextValidation.listingType || nextValidation.condition) {
       setShowValidation(nextValidation);
+      scrollElementIntoWizardView(
+        nextValidation.listingType ? listingTypeRef.current : conditionRef.current
+      );
       return;
     }
 
@@ -66,6 +102,7 @@ const Step2ListingType = () => {
       </p>
 
       <div
+        ref={listingTypeRef}
         className={`mt-5 grid gap-3 sm:grid-cols-2 ${
           showValidation.listingType ? "rounded-xl ring-2 ring-red-400 ring-offset-2" : ""
         }`}
@@ -103,7 +140,7 @@ const Step2ListingType = () => {
       )}
 
       {requiresCondition && (
-      <div className="mt-6">
+      <div ref={conditionRef} className="mt-6">
         <p className="text-sm font-semibold text-slate-900">Vehicle Condition</p>
 
         <div
@@ -111,7 +148,7 @@ const Step2ListingType = () => {
             showValidation.condition ? "border-red-400 ring-2 ring-red-400 ring-offset-2" : "border-slate-200"
           }`}
         >
-          {conditionOptions.map((option) => {
+          {activeConditionOptions.map((option) => {
             const isSelected = condition === option.value;
 
             return (

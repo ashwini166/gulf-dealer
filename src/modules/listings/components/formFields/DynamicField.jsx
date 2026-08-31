@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ColorSwatchField from "./ColorSwatchField";
+import PhoneNumberField from "./PhoneNumberField";
 import ToggleGroupField from "./ToggleGroupField";
 import ToggleSwitchField from "../ToggleSwitchField";
 import {
@@ -11,7 +12,7 @@ import {
 import { GULF_COUNTRY_NAMES } from "../../config/gulfLocations.config";
 
 const currentYear = new Date().getFullYear();
-const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear + 1 - i);
+const yearOptions = Array.from({ length: currentYear - 1979 }, (_, i) => currentYear - i);
 
 const baseInputClass =
   "h-10 w-full rounded-lg border bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
@@ -170,6 +171,22 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
         />
       );
 
+    case "phone":
+      {
+        const isSyncedWhatsapp = field.name === "whatsappNumber" && Boolean(form?.whatsappAvailable);
+
+      return (
+        <PhoneNumberField
+          value={value}
+          onChange={onChange}
+          error={error}
+          placeholder={field.placeholder}
+          disabled={isSyncedWhatsapp}
+          helperText={isSyncedWhatsapp ? "Using the same mobile number for WhatsApp." : field.description}
+        />
+      );
+      }
+
     case "select":
       {
         const selectOptions =
@@ -180,9 +197,18 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
         return (
           <select value={value ?? ""} onChange={(e) => onChange(e.target.value)} className={`${baseInputClass} ${errorClass}`}>
             <option value="">Select {field.label.toLowerCase()}</option>
-            {selectOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
-            ))}
+            {selectOptions.map((option, idx) => {
+              const isObject = typeof option === "object" && option !== null;
+              const optVal = isObject ? option.value : option;
+              const optLabel = isObject ? option.label : option;
+              const uniqueKey = isObject ? option.value || option.label || idx : `${option}-${idx}`;
+
+              return (
+                <option key={uniqueKey} value={optVal}>
+                  {optLabel}
+                </option>
+              );
+            })}
           </select>
         );
       }

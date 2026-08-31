@@ -15,67 +15,56 @@ const CARAVAN_TYPES = [
   "Travel Trailer",
 ];
 
+const CARAVAN_INTERIOR_COLOR_OPTIONS = [
+  "Beige", "Black", "Blue", "Brown", "Charcoal", "Cream", "Dark Brown",
+  "Dark Grey", "Grey", "Ivory", "Light Brown", "Light Grey", "Oak",
+  "Off White", "Tan", "Walnut", "White", "Wood Finish",
+];
+
 export const caravanFormConfig = {
   key: "CARAVAN",
   label: "Caravan",
 
   vehicleInfoFields: [
     { name: "title", label: "Listing Title", type: "text", required: true, span: 2, placeholder: "e.g. 2022 Bailey Phoenix 640 Touring Caravan" },
+    { name: "sellerName", label: "Seller Name", type: "text", required: true, placeholder: "e.g. Ahmed Al Rashid" },
     { name: "brand", label: "Brand", type: "brandSelect", required: true },
     { name: "catalogModel", label: "Model", type: "modelSelect", required: true },
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
-    { name: "bodyType", label: "Caravan Type", type: "select", options: CARAVAN_TYPES },
-    { name: "mileage", label: "Mileage", type: "number", placeholder: "e.g. 15000" },
-    { name: "exteriorColor", label: "Exterior Color", type: "colorSwatch", swatches: CARAVAN_COLOR_SWATCHES, span: 2 },
+    { name: "bodyType", label: "Caravan Type", type: "select", required: true, options: CARAVAN_TYPES },
+    { name: "exteriorColor", label: "Exterior Colour", type: "colorSwatch", required: true, swatches: CARAVAN_COLOR_SWATCHES, span: 2 },
+    { name: "interiorColor", label: "Interior Colour", type: "colorSwatch", swatches: CARAVAN_INTERIOR_COLOR_OPTIONS },
     { name: "vinNumber", label: "VIN / Chassis Number", type: "vin", span: 2 },
-    { name: "googleMapLink", label: "Google Map Location Link", type: "url", span: 2 },
-    { name: "contactEmail", label: "Contact Email Address", type: "email" },
-    { name: "description", label: "Description", type: "textarea", span: 2, placeholder: "Describe the caravan's condition, layout, and standout features..." },
+    { name: "registrationCountry", label: "Registration Country", type: "countrySelect", required: true },
+    { name: "registrationExpiry", label: "Registration Expiry", type: "date" },
+    { name: "mobileNumber", label: "Mobile Number", type: "phone", required: true, placeholder: "7767754397" },
+    { name: "whatsappNumber", label: "WhatsApp Number", type: "phone", required: true, placeholder: "7767754397" },
+    { name: "whatsappAvailable", label: "WhatsApp available on mobile number", type: "toggleSwitch", fullWidth: true, description: "Turn on to use the same mobile number for WhatsApp." },
+    { name: "contactEmail", label: "Contact Email Address", type: "email", required: true, placeholder: "e.g. seller@example.com" },
+    { name: "description", label: "Description", type: "textarea", required: true, span: 2, placeholder: "Describe the caravan's condition, layout, and standout features..." },
   ],
 
   engineSectionTitle: "Technical Specifications",
   specsFields: [
-    { name: "length", label: "Length (m)", type: "text" },
-    { name: "width", label: "Width (m)", type: "text" },
-    { name: "height", label: "Height (m)", type: "text" },
-    { name: "weight", label: "Unladen Weight (kg)", type: "number" },
-    { name: "sleepingCapacity", label: "Sleeping Capacity", type: "select", options: ["1", "2", "3", "4", "5", "6", "7", "8+"] },
-    { name: "berths", label: "Number of Berths", type: "select", options: ["1", "2", "3", "4", "5", "6"] },
-    { name: "axleType", label: "Axle Type", type: "select", options: ["Single Axle", "Twin Axle", "Tandem Axle"] },
-    { name: "towWeight", label: "Tow Weight (kg)", type: "number" },
+    { name: "sleepingCapacity", label: "Sleeping Capacity", type: "select", required: true, options: ["1 Berth", "2 Berth", "3 Berth", "4 Berth", "5 Berth", "6 Berth", "7 Berth", "8 Berth", "9 Berth", "10+ Berth"] },
+    { name: "seatingCapacity", label: "Seating Capacity", type: "select", options: ["2 Seater", "3 Seater", "4 Seater", "5 Seater", "6 Seater", "7 Seater", "8 Seater", "9 Seater", "10+ Seater"] },
+    { name: "length", label: "Length", type: "text", placeholder: "Feet / Meters" },
+    { name: "width", label: "Width", type: "text", placeholder: "Feet / Meters" },
+    { name: "height", label: "Height", type: "text", placeholder: "Feet / Meters" },
+    { name: "grossWeight", label: "Gross Weight", type: "number", placeholder: "Kilograms" },
+    { name: "freshWaterTank", label: "Fresh Water Tank", type: "number", placeholder: "Litres" },
+    { name: "greyWaterTank", label: "Grey Water Tank", type: "number", placeholder: "Litres" },
+    { name: "blackWaterTank", label: "Black Water Tank", type: "number", placeholder: "Litres" },
+    { name: "numberOfAxles", label: "Number of Axles", type: "select", options: ["1", "2", "3"] },
+    { name: "slideOuts", label: "Slide-Outs", type: "select", options: ["0", "1", "2", "3", "4"] },
   ],
 
   featureGroups: [
     {
-      key: "interior",
-      label: "Interior Features",
-      options: ["Fixed Bed", "Bunk Beds", "Dinette Conversion", "Wardrobe Storage", "Carpet Flooring", "LED Interior Lighting"],
-    },
-    {
-      key: "kitchen",
-      label: "Kitchen Features",
-      options: ["Gas Hob", "Oven", "Microwave", "Fridge/Freezer", "Sink", "Water Heater"],
-    },
-    {
-      key: "bathroom",
-      label: "Bathroom Features",
-      options: ["Toilet", "Shower", "Wash Basin", "Water Tank"],
-    },
-    {
-      key: "comfort",
-      label: "Comfort & Climate",
-      options: ["Solar Panel", "Air Conditioning", "Heating System", "Awning", "TV / Entertainment System"],
-    },
-    {
-      key: "exterior",
-      label: "Exterior Features",
-      options: ["Bike Rack", "Roof Rack", "Towbar Included", "Spare Wheel", "Outdoor Storage Locker"],
-    },
-    {
-      key: "safety",
-      label: "Safety Features",
-      options: ["Smoke Alarm", "Gas Detector", "Fire Extinguisher", "Breakaway Cable", "Wheel Clamp"],
+      key: "features",
+      label: "Features",
+      options: ["Air Conditioner", "Awning", "Bathroom", "Battery Charger", "Bluetooth Audio", "Cassette Toilet", "Central Locking", "Dining Table", "Double Bed", "Electric Brakes", "Electric Stabilizer", "External BBQ Point", "External Shower", "External Storage", "Fire Extinguisher", "Fly Screens", "Fresh Water Tank", "Gas Cooker", "Gas Oven", "Generator Ready", "Grey Water Tank", "Heating System", "Hot Water System", "Kitchen Sink", "LED Interior Lights", "Microwave", "Mosquito Screens", "Outdoor Lighting", "Power Awning", "Refrigerator", "Roof Hatch", "Satellite Ready", "Shower", "Solar Panels", "Spare Wheel", "Stabilizer Legs", "Stereo System", "TV", "TV Antenna", "USB Charging Ports", "Wardrobe", "Waste Water Tank", "Water Heater", "Wi-Fi Ready", "Window Blinds"],
     },
   ],
 

@@ -25,6 +25,18 @@ const BulkVehicleWizardContext = createContext(null);
 const BULK_STEP_SEQUENCE = [1, 2, 4, 5, 6, 7, 8, 9];
 const TOTAL_BULK_STEPS = BULK_STEP_SEQUENCE.length;
 
+const scrollWizardToTop = () => {
+  requestAnimationFrame(() => {
+    const scrollArea = document.querySelector("[data-wizard-scroll-area]");
+    if (scrollArea) {
+      scrollArea.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+};
+
 export const BulkVehicleWizardProvider = ({ children, subscriptionId: providedSubscriptionId }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,6 +122,7 @@ export const BulkVehicleWizardProvider = ({ children, subscriptionId: providedSu
       if (!listing?._id) return;
       const clampedIndex = Math.max(0, Math.min(index, BULK_STEP_SEQUENCE.length - 1));
       updateUrl(listing._id, BULK_STEP_SEQUENCE[clampedIndex]);
+      scrollWizardToTop();
     },
     [listing, updateUrl]
   );
