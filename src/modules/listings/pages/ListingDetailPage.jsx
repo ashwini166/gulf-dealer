@@ -407,7 +407,7 @@ const ListingDetailPage = () => {
 
       <div className="space-y-[16px]">
         <EditableFieldSection
-          title="Vehicle Information"
+          title={formType === "SPECIAL_NUMBER" ? "Plate Info" : "Vehicle Information"}
           step={4}
           fields={config.vehicleInfoFields.filter((field) => field.name !== "description")}
           displayFields={displayVehicleInfoFields}
@@ -420,31 +420,33 @@ const ListingDetailPage = () => {
         />
         {formType === "SPECIAL_NUMBER" && <PlateSummary vehicleInfo={vehicleInfo} />}
 
-        <EditableFieldSection
-          title={config.engineSectionTitle || `${config.label} Specifications`}
-          step={5}
-          fields={config.specsFields}
-          displayFields={[
-            { name: "mileage", label: "Mileage", type: "number" },
-            { name: "transmission", label: "Transmission", type: "text" },
-            { name: "engineCapacity", label: "Engine Capacity", type: "text" },
-            { name: "doors", label: "Doors", type: "text" },
-            { name: "exteriorColor", label: "Exterior Color", type: "text" },
-            { name: "steeringSide", label: "Steering Side", type: "text" },
-            { name: "fuelType", label: "Fuel Type", type: "text" },
-            { name: "driveType", label: "Drive Type", type: "text" },
-            { name: "horsepower", label: "Horsepower", type: "number" },
-            { name: "seats", label: "Seats", type: "text" },
-            { name: "interiorColor", label: "Interior Color", type: "text" },
-            { name: "vehicleClass", label: "Vehicle Class", type: "text" },
-          ]}
-          displaySourceData={{ ...vehicleInfo, ...specs }}
-          sourceData={specs}
-          categoryId={categoryId}
-          listingId={listingId}
-          canEdit={canEdit}
-          onSaved={handleSectionSaved}
-        />
+        {config.specsFields.length > 0 && (
+          <EditableFieldSection
+            title={config.engineSectionTitle || `${config.label} Specifications`}
+            step={5}
+            fields={config.specsFields}
+            displayFields={[
+              { name: "mileage", label: "Mileage", type: "number" },
+              { name: "transmission", label: "Transmission", type: "text" },
+              { name: "engineCapacity", label: "Engine Capacity", type: "text" },
+              { name: "doors", label: "Doors", type: "text" },
+              { name: "exteriorColor", label: "Exterior Color", type: "text" },
+              { name: "steeringSide", label: "Steering Side", type: "text" },
+              { name: "fuelType", label: "Fuel Type", type: "text" },
+              { name: "driveType", label: "Drive Type", type: "text" },
+              { name: "horsepower", label: "Horsepower", type: "number" },
+              { name: "seats", label: "Seats", type: "text" },
+              { name: "interiorColor", label: "Interior Color", type: "text" },
+              { name: "vehicleClass", label: "Vehicle Class", type: "text" },
+            ]}
+            displaySourceData={{ ...vehicleInfo, ...specs }}
+            sourceData={specs}
+            categoryId={categoryId}
+            listingId={listingId}
+            canEdit={canEdit}
+            onSaved={handleSectionSaved}
+          />
+        )}
 
         <EditableFieldSection
           title="Description"

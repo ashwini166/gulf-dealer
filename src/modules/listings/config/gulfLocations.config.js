@@ -3,10 +3,10 @@ export const GULF_COUNTRIES = [
     name: "Bahrain",
     iso2: "BH",
     governorates: [
-      { name: "Muharraq Governorate", cities: ["Muharraq Governorate"] },
-      { name: "Capital Governorate", cities: ["Capital Governorate"] },
-      { name: "Northern Governorate", cities: ["Northern Governorate"] },
-      { name: "Southern Governorate", cities: ["Southern Governorate"] },
+      { name: "Capital Governorate", cities: ["Manama", "Juffair", "Adliya", "Hoora", "Seef"] },
+      { name: "Muharraq Governorate", cities: ["Muharraq", "Amwaj", "Hidd", "Busaiteen"] },
+      { name: "Northern Governorate", cities: ["Budaiya", "Saar", "Barbar", "Diraz", "Hamad Town"] },
+      { name: "Southern Governorate", cities: ["Riffa", "Isa Town", "Zallaq", "Awali", "Askar"] },
     ],
   },
   {
@@ -14,37 +14,25 @@ export const GULF_COUNTRIES = [
     iso2: "SA",
     governorates: [
       { name: "Riyadh", cities: ["Riyadh"] },
-      { name: "Makkah", cities: ["Makkah"] },
+      { name: "Makkah", cities: ["Jeddah", "Makkah", "Taif"] },
       { name: "Madinah", cities: ["Madinah"] },
-      { name: "Eastern Province", cities: ["Eastern Province"] },
-      { name: "Al Qassim Region", cities: ["Al Qassim Region"] },
-      { name: "Asir", cities: ["Asir"] },
+      { name: "Eastern Province", cities: ["Dammam", "Khobar", "Dhahran", "Al Ahsa", "Jubail"] },
+      { name: "Al-Qassim", cities: ["Buraydah"] },
+      { name: "Asir", cities: ["Abha"] },
       { name: "Tabuk", cities: ["Tabuk"] },
       { name: "Hail", cities: ["Hail"] },
       { name: "Jazan", cities: ["Jazan"] },
       { name: "Najran", cities: ["Najran"] },
       { name: "Al-Baha", cities: ["Al-Baha"] },
-      { name: "Al-Jawf", cities: ["Al-Jawf"] },
-      { name: "Northern Borders", cities: ["Northern Borders"] },
-    ],
-  },
-  {
-    name: "Kuwait",
-    iso2: "KW",
-    governorates: [
-      { name: "Al Asimah", cities: ["Al Asimah"] },
-      { name: "Hawalli", cities: ["Hawalli"] },
-      { name: "Farwaniya", cities: ["Farwaniya"] },
-      { name: "Ahmadi", cities: ["Ahmadi"] },
-      { name: "Jahra", cities: ["Jahra"] },
-      { name: "Mubarak Al-Kabeer", cities: ["Mubarak Al-Kabeer"] },
+      { name: "Al-Jawf", cities: ["Sakaka"] },
+      { name: "Northern Borders", cities: ["Arar"] },
     ],
   },
   {
     name: "United Arab Emirates",
     iso2: "AE",
     governorates: [
-      { name: "Abu Dhabi", cities: ["Abu Dhabi"] },
+      { name: "Abu Dhabi", cities: ["Abu Dhabi", "Al Ain", "Madinat Zayed"] },
       { name: "Dubai", cities: ["Dubai"] },
       { name: "Sharjah", cities: ["Sharjah"] },
       { name: "Ajman", cities: ["Ajman"] },
@@ -54,20 +42,32 @@ export const GULF_COUNTRIES = [
     ],
   },
   {
+    name: "Kuwait",
+    iso2: "KW",
+    governorates: [
+      { name: "Al Asimah", cities: ["Kuwait City", "Sharq", "Mirqab"] },
+      { name: "Hawalli", cities: ["Hawalli", "Salmiya", "Jabriya"] },
+      { name: "Farwaniya", cities: ["Farwaniya", "Khaitan", "Jleeb Al-Shuyoukh"] },
+      { name: "Ahmadi", cities: ["Ahmadi", "Fahaheel", "Mangaf"] },
+      { name: "Jahra", cities: ["Jahra"] },
+      { name: "Mubarak Al-Kabeer", cities: ["Mubarak Al-Kabeer"] },
+    ],
+  },
+  {
     name: "Oman",
     iso2: "OM",
     governorates: [
-      { name: "Muscat", cities: ["Muscat"] },
-      { name: "Dhofar", cities: ["Dhofar"] },
-      { name: "Musandam", cities: ["Musandam"] },
+      { name: "Muscat", cities: ["Muscat", "Muttrah", "Seeb"] },
+      { name: "Dhofar", cities: ["Salalah"] },
+      { name: "Musandam", cities: ["Khasab"] },
       { name: "Al Buraimi", cities: ["Al Buraimi"] },
-      { name: "Al Dakhiliyah", cities: ["Al Dakhiliyah"] },
-      { name: "Al Dhahirah", cities: ["Al Dhahirah"] },
-      { name: "North Al Batinah", cities: ["North Al Batinah"] },
-      { name: "South Al Batinah", cities: ["South Al Batinah"] },
-      { name: "North Al Sharqiyah", cities: ["North Al Sharqiyah"] },
-      { name: "South Al Sharqiyah", cities: ["South Al Sharqiyah"] },
-      { name: "Al Wusta", cities: ["Al Wusta"] },
+      { name: "Al Dakhiliyah", cities: ["Nizwa", "Bahla"] },
+      { name: "Al Dhahirah", cities: ["Ibri"] },
+      { name: "North Al Batinah", cities: ["Sohar", "Shinas"] },
+      { name: "South Al Batinah", cities: ["Rustaq", "Barka"] },
+      { name: "North Al Sharqiyah", cities: ["Ibra"] },
+      { name: "South Al Sharqiyah", cities: ["Sur"] },
+      { name: "Al Wusta", cities: ["Duqm"] },
     ],
   },
   {
@@ -75,8 +75,8 @@ export const GULF_COUNTRIES = [
     iso2: "QA",
     governorates: [
       { name: "Doha", cities: ["Doha"] },
-      { name: "Al Rayyan", cities: ["Al Rayyan"] },
-      { name: "Al Wakrah", cities: ["Al Wakrah"] },
+      { name: "Al Rayyan", cities: ["Al Rayyan", "Education City"] },
+      { name: "Al Wakrah", cities: ["Al Wakrah", "Mesaieed"] },
       { name: "Al Khor", cities: ["Al Khor"] },
       { name: "Al Daayen", cities: ["Al Daayen"] },
       { name: "Umm Salal", cities: ["Umm Salal"] },
@@ -108,8 +108,8 @@ export const getServiceCountryCurrencyByName = (countryName) =>
   COUNTRY_CURRENCY_MAP[String(countryName || "").trim()] || "BHD";
 
 export const getServiceCityNamesByCountry = (countryName) =>
-  GULF_COUNTRIES.find((country) => country.name === countryName)?.governorates.map(
-    (city) => city.name
+  GULF_COUNTRIES.find((country) => country.name === countryName)?.governorates.flatMap(
+    (governorate) => governorate.cities
   ) || [];
 
 export const getNormalizedLocationCountry = (countryName) => {
@@ -118,21 +118,30 @@ export const getNormalizedLocationCountry = (countryName) => {
   return GULF_COUNTRIES.find((country) => country.name === countryName)?.name || countryName || "";
 };
 
-export const getNormalizedLocationCity = (countryName, cityName, governorateName) => {
-  const normalizedCountry = getNormalizedLocationCountry(countryName);
-  const cityNames = getServiceCityNamesByCountry(normalizedCountry);
+export const getNormalizedLocationState = (countryName, stateName, cityName) => {
+  const country = GULF_COUNTRIES.find((item) => item.name === getNormalizedLocationCountry(countryName));
+  if (!country) return stateName || "";
 
-  if (cityNames.includes(cityName)) return cityName;
-  if (cityNames.includes(governorateName)) return governorateName;
+  if (country.governorates.some((item) => item.name === stateName)) return stateName;
 
-  return cityName || governorateName || "";
+  return country.governorates.find((item) => item.cities.includes(cityName))?.name || stateName || "";
+};
+
+export const getNormalizedLocationCity = (countryName, cityName, stateName) => {
+  const country = GULF_COUNTRIES.find((item) => item.name === getNormalizedLocationCountry(countryName));
+  if (!country) return cityName || stateName || "";
+
+  const validCities = country.governorates.flatMap((item) => item.cities);
+  if (validCities.includes(cityName)) return cityName;
+
+  const state = country.governorates.find((item) => item.name === stateName);
+  return state?.cities[0] || cityName || "";
 };
 
 export const AREAS_BY_CITY = {
   Dubai: ["Deira", "Jumeirah", "Al Barsha", "Business Bay"],
   "Abu Dhabi": ["Al Reem Island", "Khalifa City", "Al Mushrif"],
   Riyadh: ["Al Olaya", "Al Malaz", "Diplomatic Quarter"],
-  "Al Qassim Region": ["Al Qassim Region"],
   Doha: ["West Bay", "Al Sadd", "The Pearl"],
   "Kuwait City": ["Sharq", "Dasman", "Salmiya"],
 };

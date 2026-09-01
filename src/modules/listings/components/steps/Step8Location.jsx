@@ -5,6 +5,7 @@ import {
   GULF_COUNTRIES,
   getNormalizedLocationCity,
   getNormalizedLocationCountry,
+  getNormalizedLocationState,
 } from "../../config/gulfLocations.config";
 import FormField from "../FormField";
 import ToggleSwitchField from "../ToggleSwitchField";
@@ -42,14 +43,19 @@ const Step8Location = () => {
   const existingLocation = listing?.location || {};
 
   const normalizedCountry = getNormalizedLocationCountry(existingLocation.country);
+  const normalizedState = getNormalizedLocationState(
+    normalizedCountry,
+    existingLocation.governorate,
+    existingLocation.city
+  );
   const normalizedCity = getNormalizedLocationCity(
     normalizedCountry,
     existingLocation.city,
-    existingLocation.governorate
+    normalizedState
   );
 
   const [country, setCountry] = useState(normalizedCountry);
-  const [governorate, setGovernorate] = useState(normalizedCity);
+  const [governorate, setGovernorate] = useState(normalizedState);
   const [city, setCity] = useState(normalizedCity);
   const [area, setArea] = useState(existingLocation.area || "");
   const [showPhoneNumber, setShowPhoneNumber] = useState(existingLocation.showPhoneNumber ?? true);
@@ -63,6 +69,10 @@ const Step8Location = () => {
     return GULF_COUNTRIES.find((item) => item.name === country)?.governorates || [];
   }, [country]);
 
+  const cityOptions = useMemo(() => {
+    return governorateOptions.find((item) => item.name === governorate)?.cities || [];
+  }, [governorate, governorateOptions]);
+
   const handleCountryChange = (value) => {
     setCountry(value);
     setGovernorate("");
@@ -72,16 +82,21 @@ const Step8Location = () => {
 
   const handleGovernorateChange = (value) => {
     setGovernorate(value);
-    setCity(value);
+    setCity("");
     setErrors((previous) => ({ ...previous, governorate: "", city: "" }));
+  };
+
+  const handleCityChange = (value) => {
+    setCity(value);
+    setErrors((previous) => ({ ...previous, city: "" }));
   };
 
   const handleNext = async () => {
     const nextErrors = {};
 
     if (!country) nextErrors.country = "Country is required";
-    if (!governorate) nextErrors.governorate = "City is required";
-    if (!city) nextErrors.city = "City/Area is required";
+    if (!governorate) nextErrors.governorate = "State / Governorate is required";
+    if (!city) nextErrors.city = "City is required";
     if (hasAreaField && !area) nextErrors.area = "Area is required";
     if (mapsLink && !/^https?:\/\/.+/i.test(mapsLink.trim())) {
       nextErrors.mapsLink = "Enter a valid Google Maps link";
@@ -125,15 +140,23 @@ const Step8Location = () => {
         </FormField>
         </div>
 
-        <div ref={(node) => {
-          fieldRefs.current.governorate = node;
-          fieldRefs.current.city = node;
-        }}>
-        <FormField label="City" required error={errors.governorate || errors.city}>
+        <div ref={(node) => { fieldRefs.current.governorate = node; }}>
+        <FormField label="State / Governorate" required error={errors.governorate}>
           <select value={governorate} onChange={(e) => handleGovernorateChange(e.target.value)} disabled={!country} className={inputClass}>
-            <option value="">Select city</option>
+            <option value="">Select state / governorate</option>
             {governorateOptions.map((item) => (
               <option key={item.name} value={item.name}>{item.name}</option>
+            ))}
+          </select>
+        </FormField>
+        </div>
+
+        <div className={hasAreaField ? "" : "sm:col-span-2"} ref={(node) => { fieldRefs.current.city = node; }}>
+        <FormField label="City" required error={errors.city}>
+          <select value={city} onChange={(e) => handleCityChange(e.target.value)} disabled={!governorate} className={inputClass}>
+            <option value="">Select city</option>
+            {cityOptions.map((item) => (
+              <option key={item} value={item}>{item}</option>
             ))}
           </select>
         </FormField>

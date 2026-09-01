@@ -3,22 +3,13 @@ import { Car, Loader2, X } from "lucide-react";
 
 import { useBulkVehicleWizard } from "../context/BulkVehicleWizardContext";
 import WizardStepper from "./WizardStepper";
-
-const stepLabels = [
-  { position: 1, label: "Category" },
-  { position: 2, label: "Listing Type" },
-  { position: 3, label: "Vehicle Info" },
-  { position: 4, label: "Specs" },
-  { position: 5, label: "Features" },
-  { position: 6, label: "Media" },
-  { position: 7, label: "Location" },
-  { position: 8, label: "Pricing" },
-];
+import { getWizardSteps } from "../config/wizardSteps.config";
 
 const BulkWizardShell = ({ children }) => {
   const {
     currentStepPosition,
     totalSteps,
+    listingFormType,
     isInitializing,
     initError,
     saveDraft,
@@ -27,6 +18,10 @@ const BulkWizardShell = ({ children }) => {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const progressPercent = Math.round((currentStepPosition / totalSteps) * 100);
+  const stepLabels = getWizardSteps(listingFormType).map((step, index) => ({
+    position: index + 1,
+    label: step.label,
+  }));
 
   if (isInitializing) {
     return (

@@ -16,15 +16,16 @@ import {
   saveListingMediaApi,
 } from "../api/vehicleListingApi";
 import { createBulkDraftListingApi } from "../api/bulkListingApi";
+import {
+  getListingWizardFormType,
+  getWizardStepSequence,
+} from "../config/wizardSteps.config";
 
 const BulkVehicleWizardContext = createContext(null);
 
 // Dealer's own business plan already replaces the Plan step entirely —
 // the subscription is fixed to whatever is tied to their Dealer profile
 // (dealer.businessSubscriptionRef), never chosen per-vehicle.
-const BULK_STEP_SEQUENCE = [1, 2, 4, 5, 6, 7, 8, 9];
-const TOTAL_BULK_STEPS = BULK_STEP_SEQUENCE.length;
-
 const scrollWizardToTop = () => {
   requestAnimationFrame(() => {
     const scrollArea = document.querySelector("[data-wizard-scroll-area]");
@@ -114,23 +115,31 @@ export const BulkVehicleWizardProvider = ({ children, subscriptionId: providedSu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscriptionId, listingId]);
 
-  const currentStepIndex = BULK_STEP_SEQUENCE.indexOf(requestedStep);
-  const currentStep = currentStepIndex === -1 ? 1 : requestedStep;
+  const listingFormType = getListingWizardFormType(listing);
+  const activeStepSequence = getWizardStepSequence(listingFormType);
+  const totalSteps = activeStepSequence.length;
+  const currentStepIndex = activeStepSequence.indexOf(requestedStep);
+  const currentStep =
+    currentStepIndex === -1
+      ? activeStepSequence.find((step) => step > requestedStep) ||
+        activeStepSequence[activeStepSequence.length - 1]
+      : requestedStep;
+  const currentStepPosition = activeStepSequence.indexOf(currentStep) + 1;
 
   const goToStepIndex = useCallback(
     (index) => {
       if (!listing?._id) return;
-      const clampedIndex = Math.max(0, Math.min(index, BULK_STEP_SEQUENCE.length - 1));
-      updateUrl(listing._id, BULK_STEP_SEQUENCE[clampedIndex]);
+      const clampedIndex = Math.max(0, Math.min(index, activeStepSequence.length - 1));
+      updateUrl(listing._id, activeStepSequence[clampedIndex]);
       scrollWizardToTop();
     },
-    [listing, updateUrl]
+    [activeStepSequence, listing, updateUrl]
   );
 
   const goNext = useCallback(async () => {
-    const index = BULK_STEP_SEQUENCE.indexOf(currentStep);
+    const index = activeStepSequence.indexOf(currentStep);
 
-    if (index === BULK_STEP_SEQUENCE.length - 1) {
+    if (index === activeStepSequence.length - 1) {
       try {
         await submitSingleBulkListingApi(listing._id);
         showToast("Vehicle submitted for admin review", "success");
@@ -147,12 +156,12 @@ export const BulkVehicleWizardProvider = ({ children, subscriptionId: providedSu
     }
 
     goToStepIndex(index + 1);
-  }, [currentStep, goToStepIndex, navigate, subscriptionId, listing, showToast]);
+  }, [activeStepSequence, currentStep, goToStepIndex, navigate, subscriptionId, listing, showToast]);
 
   const goPrevious = useCallback(() => {
-    const index = BULK_STEP_SEQUENCE.indexOf(currentStep);
+    const index = activeStepSequence.indexOf(currentStep);
     goToStepIndex(index - 1);
-  }, [currentStep, goToStepIndex]);
+  }, [activeStepSequence, currentStep, goToStepIndex]);
 
   const saveStep = useCallback(
     async (step, payload, { advance = true } = {}) => {
@@ -215,12 +224,13 @@ export const BulkVehicleWizardProvider = ({ children, subscriptionId: providedSu
   const value = {
     listing,
     currentStep,
-    totalSteps: TOTAL_BULK_STEPS,
-    currentStepPosition: currentStepIndex === -1 ? 1 : currentStepIndex + 1,
+    totalSteps,
+    currentStepPosition,
+    listingFormType,
     isInitializing,
     initError,
     isSaving,
-    goToStep: (step) => goToStepIndex(BULK_STEP_SEQUENCE.indexOf(step)),
+    goToStep: (step) => goToStepIndex(activeStepSequence.indexOf(step)),
     goNext,
     goPrevious,
     saveStep,

@@ -28,13 +28,13 @@ const writeWaitingScreen = (paymentWindow) => {
   try {
     paymentWindow.document.title = "Opening secure payment...";
     paymentWindow.document.body.innerHTML = `
-      <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a">
+      <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;background:#f8fafc;font-family:Inter,Arial,sans-serif;color:#0f172a">
         <section style="text-align:center">
           <div style="height:36px;width:36px;margin:0 auto 16px;border:4px solid #dbeafe;border-top-color:#2563eb;border-radius:999px;animation:spin 1s linear infinite"></div>
           <h1 style="font-size:18px;margin:0 0 8px">Opening secure payment</h1>
           <p style="font-size:13px;margin:0;color:#64748b">Please keep this window open.</p>
         </section>
-        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+        <style>@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");@keyframes spin{to{transform:rotate(360deg)}}</style>
       </main>
     `;
   } catch {

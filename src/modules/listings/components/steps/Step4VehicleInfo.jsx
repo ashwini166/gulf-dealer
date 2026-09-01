@@ -33,6 +33,8 @@ const Step4VehicleInfo = () => {
   const categoryId = listing?.category?._id || listing?.category;
   const formType = listing?.category?.vehicleFormType || "CAR";
   const config = configByFormType[formType] || carFormConfig;
+  const infoTitle =
+    formType === "SPECIAL_NUMBER" ? "Plate Info" : `${config.label} Information`;
 
   const existingInfo = listing?.vehicleInfo || {};
   const dealerProfile = user?.dealerProfile || user?.dealer || {};
@@ -163,7 +165,7 @@ const Step4VehicleInfo = () => {
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-slate-950">{config.label} Information</h2>
+      <h2 className="text-lg font-bold text-slate-950">{infoTitle}</h2>
       <p className="mt-1 text-sm text-slate-500">Provide accurate details to attract buyers.</p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
