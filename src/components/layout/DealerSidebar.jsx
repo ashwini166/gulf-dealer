@@ -16,6 +16,7 @@ import useAuth from "../../modules/auth/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { subscriptionApi } from "../../modules/subscription/api/subscriptionApi";
 import { profileApi } from "../../modules/profile/api/profileApi";
+import { USER_APP_URL } from "../../config/env";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutGrid },
@@ -175,7 +176,11 @@ export default function DealerSidebar({ isOpen, onClose }) {
             HEADER
         ----------------------------------------- */}
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-          <div className="flex items-center gap-2">
+          <a
+            href={USER_APP_URL}
+            className="flex items-center gap-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            aria-label="Go to GulfInCart home"
+          >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-bold">
               G
             </div>
@@ -184,7 +189,7 @@ export default function DealerSidebar({ isOpen, onClose }) {
               <p className="text-sm font-semibold">GulfInCart</p>
               <p className="text-xs text-slate-400">Dealer Dashboard</p>
             </div>
-          </div>
+          </a>
 
           <button
             type="button"
