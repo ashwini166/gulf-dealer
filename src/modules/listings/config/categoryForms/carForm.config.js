@@ -90,25 +90,6 @@ const CAR_SEAT_UPHOLSTERY_OPTIONS = [
   "Other",
 ];
 
-const CAR_BODY_TYPES = [
-  "Sedan",
-  "Hatchback",
-  "SUV",
-  "Crossover",
-  "Coupe",
-  "Convertible",
-  "Wagon",
-  "Pickup",
-  "MPV",
-  "Minivan",
-  "Van",
-  "Fastback",
-  "Liftback",
-  "Roadster",
-  "Targa",
-  "Chassis Cab",
-];
-
 export const carFormConfig = {
   key: "CAR",
   label: "Car",
@@ -138,7 +119,7 @@ export const carFormConfig = {
     { name: "catalogModel", label: "Model", type: "modelSelect", required: true },
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
-    { name: "bodyType", label: "Body Type", type: "select", required: true, options: CAR_BODY_TYPES },
+    { name: "bodyType", label: "Body Type", type: "select", required: true },
     { name: "sellerName", label: "Seller Name", type: "text", required: true, placeholder: "e.g. Ahmed Al Rashid" },
     { name: "availability", label: "Availability", type: "select", options: ["Available", "Reserved"] },
     { name: "fuelType", label: "Fuel Type", type: "select", required: true, options: ["Petrol", "Diesel", "Hybrid", "Plug-in Hybrid", "Electric"] },

@@ -1,7 +1,7 @@
 import { Car, Bike, Truck, Hash, Caravan, HardHat, Store } from "lucide-react";
 
 const iconMatchers = [
-  { pattern: /bike|motorbike/i, icon: Bike },
+  { pattern: /motercycle|motorcycle/i, icon: Bike },
   { pattern: /heavy|equipment/i, icon: HardHat },
   { pattern: /special number/i, icon: Hash },
   { pattern: /buggy/i, icon: Truck },

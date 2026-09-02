@@ -3,9 +3,20 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getServiceCountryCurrencyByName } from "../config/gulfLocations.config";
 import { Check, Loader2, Star, Trash2 } from "lucide-react";
 
-import { getListingDetailApi } from "../api/listingDetailApi";
+import {
+  getListingDetailApi,
+  getMyWalletApi,
+  getPaymentStatusApi,
+  purchaseListingPlanApi,
+  resubmitListingApi,
+} from "../api/listingDetailApi";
 import { listingsApi } from "../api/listingsApi";
 import { useToast } from "../../../context/ToastContext";
+import {
+  closePreparedPaymentWindow,
+  openPaymentWindow,
+  preparePaymentWindow,
+} from "../../payment/paymentPopup";
 
 import { carFormConfig } from "../config/categoryForms/carForm.config";
 import { commercialFormConfig } from "../config/categoryForms/commercialForm.config";
@@ -46,6 +57,17 @@ const EDITABLE_STATUSES = ["DRAFT", "PENDING_REVIEW", "REJECTED"];
 const formatLocation = (location = {}) =>
   [location.city, location.governorate, location.country].filter(Boolean).join(", ");
 
+const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+const formatPlanAmount = (value) => `BHD ${Number(value || 0).toFixed(2)}`;
+const getResubmitAmount = (listing) =>
+  listing?.resubmissionPaymentRequired
+    ? Number(
+        listing?.planLimitsSnapshot?.finalPriceSnapshot ??
+          listing?.planLimitsSnapshot?.priceSnapshot ??
+          0
+      )
+    : 0;
+
 const formatDaysUsedVsTotal = (listing, now) => {
   const durationLabel = listing?.planLimitsSnapshot?.listingDurationSnapshot;
   const totalDays = durationLabel ? parseInt(durationLabel, 10) : 75;
@@ -75,6 +97,8 @@ const ListingOverviewCard = ({
   onDelete,
   onSubmitForReview,
   isSubmitting,
+  onResubmit,
+  isResubmitting,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [now, setNow] = useState(null);
@@ -219,6 +243,18 @@ const ListingOverviewCard = ({
             </button>
           ) : null}
 
+          {listing.status === "REJECTED" ? (
+            <button
+              type="button"
+              onClick={onResubmit}
+              disabled={isResubmitting}
+              className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#2454ef] px-4 text-xs font-black text-white disabled:opacity-60"
+            >
+              {isResubmitting && <Loader2 size={13} className="animate-spin" />}
+              Resubmit for Review
+            </button>
+          ) : null}
+
           <button
             type="button"
             onClick={onDelete}
@@ -247,6 +283,201 @@ const ListingOverviewCard = ({
   );
 };
 
+const ResubmitReviewModal = ({ listing, onClose, onComplete }) => {
+  const { showToast } = useToast();
+  const [wallet, setWallet] = useState(null);
+  const [isWalletLoading, setIsWalletLoading] = useState(false);
+  const [useWalletBalance, setUseWalletBalance] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const totalAmount = getResubmitAmount(listing);
+  const walletBalance = Number(wallet?.balance || 0);
+  const walletAmountUsed = useWalletBalance ? Math.min(walletBalance, totalAmount) : 0;
+  const onlineAmountDue = Math.max(0, totalAmount - walletAmountUsed);
+  const planSnapshot = listing?.planLimitsSnapshot || {};
+
+  useEffect(() => {
+    if (totalAmount <= 0) return undefined;
+
+    let active = true;
+    setIsWalletLoading(true);
+
+    getMyWalletApi()
+      .then((walletData) => {
+        if (active) setWallet(walletData || null);
+      })
+      .catch(() => {
+        if (active) setWallet(null);
+      })
+      .finally(() => {
+        if (active) setIsWalletLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [totalAmount]);
+
+  const waitForPaymentCompletion = async (paymentId) => {
+    if (!paymentId) return null;
+
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      const payment = await getPaymentStatusApi(paymentId);
+
+      if (["CAPTURED", "FAILED", "CANCELLED", "EXPIRED"].includes(payment.status)) {
+        return payment;
+      }
+
+      await wait(2000);
+    }
+
+    return null;
+  };
+
+  const completePaymentIfNeeded = async () => {
+    if (totalAmount <= 0) return;
+
+    const planId = String(planSnapshot.planId || "");
+    if (!planId) {
+      throw new Error("Listing plan information is missing. Please contact support.");
+    }
+
+    setMessage("Processing listing payment...");
+    const paymentWindow = preparePaymentWindow();
+
+    try {
+      const result = await purchaseListingPlanApi(planId, {
+        listingId: listing._id,
+        useWalletBalance,
+      });
+
+      if (result?.payment?.redirectUrl) {
+        openPaymentWindow(result.payment.redirectUrl, paymentWindow);
+        const completedPayment = await waitForPaymentCompletion(result.payment.id);
+
+        if (completedPayment?.status !== "CAPTURED") {
+          throw new Error(
+            completedPayment?.failureReason || "Payment was not completed. Please try again."
+          );
+        }
+      }
+    } finally {
+      closePreparedPaymentWindow(paymentWindow);
+    }
+  };
+
+  const handleConfirm = async () => {
+    try {
+      setError("");
+      setIsSubmitting(true);
+      await completePaymentIfNeeded();
+      setMessage("Resubmitting listing for admin review...");
+      const updatedListing = await resubmitListingApi(listing._id);
+      showToast("Listing resubmitted for admin review", "success");
+      onComplete(updatedListing);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Unable to resubmit this listing"
+      );
+    } finally {
+      setIsSubmitting(false);
+      setMessage("");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4">
+      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+        <h3 className="text-base font-bold text-slate-950">Resubmit for Review</h3>
+        <p className="mt-2 text-sm text-slate-500">
+          Complete the payment step, then this listing will go back to admin review.
+        </p>
+
+        <div className="mt-5 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+          <div className="flex justify-between gap-4">
+            <span className="text-slate-500">Plan</span>
+            <span className="text-right font-bold text-slate-900">
+              {planSnapshot.planNameSnapshot || "Listing plan"}
+            </span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-slate-500">Amount due</span>
+            <span className="font-bold text-slate-900">{formatPlanAmount(totalAmount)}</span>
+          </div>
+
+          {totalAmount > 0 ? (
+            <label className="flex cursor-pointer items-start gap-3 border-t border-slate-200 pt-3">
+              <input
+                type="checkbox"
+                checked={useWalletBalance}
+                onChange={(event) => setUseWalletBalance(event.target.checked)}
+                disabled={isWalletLoading || walletBalance <= 0 || isSubmitting}
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+              />
+              <span className="min-w-0 flex-1 font-medium text-slate-600">
+                <span className="block font-bold text-slate-900">Use wallet balance</span>
+                {isWalletLoading
+                  ? "Checking wallet balance..."
+                  : walletBalance > 0
+                    ? `Available ${formatPlanAmount(walletBalance)}. ${
+                        useWalletBalance
+                          ? `Wallet will cover ${formatPlanAmount(walletAmountUsed)}${
+                              onlineAmountDue > 0
+                                ? ` and ${formatPlanAmount(onlineAmountDue)} remains for Tap payment.`
+                                : "."
+                            }`
+                          : "Select this to apply wallet credit to this payment."
+                      }`
+                    : "No wallet balance available for this payment."}
+              </span>
+            </label>
+          ) : (
+            <p className="border-t border-slate-200 pt-3 font-semibold text-emerald-700">
+              No payment is due for this resubmission.
+            </p>
+          )}
+        </div>
+
+        {message ? (
+          <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+            {message}
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="mt-5 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-60"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+          >
+            {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : null}
+            {onlineAmountDue > 0 ? "Pay & Resubmit" : "Resubmit"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ListingDetailPage = () => {
   const { listingId } = useParams();
   const navigate = useNavigate();
@@ -258,9 +489,11 @@ const ListingDetailPage = () => {
   const [leadsCount, setLeadsCount] = useState(0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSoldConfirm, setShowSoldConfirm] = useState(false);
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingSold, setIsTogglingSold] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResubmitting, setIsResubmitting] = useState(false);
 
   const fetchListing = async () => {
     try {
@@ -363,6 +596,12 @@ const ListingDetailPage = () => {
     priceNegotiable: listing.pricing?.isNegotiable ?? listing.pricing?.priceNegotiable,
     location: formatLocation(listing.location),
   };
+
+  const handleResubmitComplete = (updatedListing) => {
+    setListing(updatedListing);
+    setShowResubmitModal(false);
+    setIsResubmitting(false);
+  };
   const displayVehicleInfoFields = [
     { name: "title", label: "Listing Title", type: "text" },
     { name: "bodyType", label: "Body Type", type: "text" },
@@ -399,9 +638,14 @@ const ListingDetailPage = () => {
         listing={listing}
         leadsCount={leadsCount}
         isSubmitting={isSubmitting}
+        isResubmitting={isResubmitting}
         isTogglingSold={isTogglingSold}
         onDelete={() => setShowDeleteConfirm(true)}
         onSubmitForReview={handleSubmitForReview}
+        onResubmit={() => {
+          setIsResubmitting(true);
+          setShowResubmitModal(true);
+        }}
         onToggleSold={() => setShowSoldConfirm(true)}
       />
 
@@ -526,6 +770,17 @@ const ListingDetailPage = () => {
           </div>
         </div>
       )}
+
+      {showResubmitModal ? (
+        <ResubmitReviewModal
+          listing={listing}
+          onClose={() => {
+            setShowResubmitModal(false);
+            setIsResubmitting(false);
+          }}
+          onComplete={handleResubmitComplete}
+        />
+      ) : null}
     </div>
   );
 };

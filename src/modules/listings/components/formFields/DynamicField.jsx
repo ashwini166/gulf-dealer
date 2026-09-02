@@ -90,7 +90,7 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
     })
       .then((data) => {
         if (isMounted) {
-          setFacetOptions((data || []).map((option) => option.label));
+          setFacetOptions(data || []);
         }
       })
       .catch(() => {
@@ -190,7 +190,7 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
     case "select":
       {
         const selectOptions =
-          shouldLoadFacetOptions && categoryId && facetOptions.length
+          shouldLoadFacetOptions && categoryId
             ? facetOptions
             : field.options || [];
 

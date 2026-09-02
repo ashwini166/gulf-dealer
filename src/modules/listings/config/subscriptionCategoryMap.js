@@ -2,7 +2,7 @@ const categoryPatterns = [
   { pattern: /caravan|carvaan/i, subscriptionCategory: "HEAVY_EQUIPMENT" },
   { pattern: /heavy|equipment/i, subscriptionCategory: "HEAVY_EQUIPMENT" },
   { pattern: /commercial/i, subscriptionCategory: "COMMERCIAL_VEHICLES" },
-  { pattern: /car|bike|motorbike|special number|number plate|buggy|showroom|dealer/i, subscriptionCategory: "CARS_BIKES" },
+  { pattern: /car|motercycle|motorcycle|special number|number plate|buggy|showroom|dealer/i, subscriptionCategory: "CARS_BIKES" },
 ];
 
 export const mapCatalogCategoryToSubscriptionCategory = (categoryName = "") => {

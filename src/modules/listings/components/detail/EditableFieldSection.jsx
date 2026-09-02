@@ -31,6 +31,27 @@ const formatDisplayValue = (field, rawValue) => {
   return String(rawValue);
 };
 
+const isBlank = (value) => value === undefined || value === null || String(value).trim() === "";
+
+const toIdValue = (value) => {
+  if (!value || typeof value !== "object") return value ?? "";
+  return value._id || value.id || "";
+};
+
+const normalizeServerMessage = (message) => {
+  const text = String(message || "").trim();
+  if (!text) return "Unable to save changes";
+
+  if (/vehicleInfo\.brand|brand.*ObjectId|Cast to ObjectId.*brand/i.test(text)) {
+    return "Please select a valid brand from the list";
+  }
+  if (/vehicleInfo\.catalogModel|catalogModel.*ObjectId|Cast to ObjectId.*catalogModel/i.test(text)) {
+    return "Please select a valid model from the list";
+  }
+
+  return text;
+};
+
 const EditableFieldSection = ({
   title,
   step,
@@ -52,14 +73,17 @@ const EditableFieldSection = ({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
+  const missingRequiredCount = fields.filter(
+    (field) => field.required && isBlank(sourceData?.[field.name])
+  ).length;
 
   const buildInitialForm = () => {
     const initial = {};
     fields.forEach((field) => {
       if (field.type === "brandSelect") {
-        initial[field.name] = sourceData?.[field.name]?._id || sourceData?.[field.name] || "";
+        initial[field.name] = toIdValue(sourceData?.[field.name]);
       } else if (field.type === "modelSelect") {
-        initial[field.name] = sourceData?.[field.name]?._id || sourceData?.[field.name] || "";
+        initial[field.name] = toIdValue(sourceData?.[field.name]);
       } else if (field.type === "toggleSwitch") {
         initial[field.name] = sourceData?.[field.name] ?? false;
       } else if (field.type === "yesNoSelect") {
@@ -94,10 +118,31 @@ const EditableFieldSection = ({
     const nextErrors = {};
 
     fields.forEach((field) => {
-      if (field.required && !form[field.name]) {
+      const value = form[field.name];
+
+      if (field.required && isBlank(value)) {
         nextErrors[field.name] = `${field.label} is required`;
+      } else if (field.type === "email" && !isBlank(value) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
+        nextErrors[field.name] = "Please enter a valid email address";
+      } else if (field.type === "url" && !isBlank(value)) {
+        try {
+          const url = new URL(String(value));
+          if (!["http:", "https:"].includes(url.protocol)) {
+            nextErrors[field.name] = "Please enter a valid URL";
+          }
+        } catch {
+          nextErrors[field.name] = "Please enter a valid URL";
+        }
+      } else if ((field.type === "number" || field.type === "yearSelect") && !isBlank(value) && Number.isNaN(Number(value))) {
+        nextErrors[field.name] = `${field.label} must be a number`;
+      } else if (field.type === "number" && Number(value) < 0) {
+        nextErrors[field.name] = `${field.label} cannot be negative`;
       }
     });
+
+    if (form.manufacturingYear && Number(form.manufacturingYear) > new Date().getFullYear() + 1) {
+      nextErrors.manufacturingYear = "Manufacturing year cannot be in the future";
+    }
 
     if (form.vinNumber && String(form.vinNumber).trim().length !== 17) {
       nextErrors.vinNumber = "VIN number must be exactly 17 characters";
@@ -128,7 +173,13 @@ const EditableFieldSection = ({
 
     setIsSaving(true);
 
-    const payload = { ...form };
+    const payload = { ...sourceData, ...form };
+
+    ["brand", "catalogModel"].forEach((fieldName) => {
+      if (payload[fieldName] !== undefined) {
+        payload[fieldName] = toIdValue(payload[fieldName]);
+      }
+    });
 
     if (payload.manufacturingYear) payload.manufacturingYear = Number(payload.manufacturingYear);
     if (payload.mileage !== undefined && payload.mileage !== "") payload.mileage = Number(payload.mileage);
@@ -149,7 +200,7 @@ const EditableFieldSection = ({
       setIsEditing(false);
       onSaved?.(updatedListing);
     } catch (error) {
-      const message = error.response?.data?.message || error.message || "Unable to save changes";
+      const message = normalizeServerMessage(error.response?.data?.message || error.message);
       showToast(message, "error");
     } finally {
       setIsSaving(false);
@@ -159,7 +210,14 @@ const EditableFieldSection = ({
   return (
     <div className="overflow-hidden rounded-[12px] border border-[#e5eaf1] bg-white">
       <div className="flex min-h-12 items-center justify-between border-b border-[#edf1f6] px-5 py-3">
-        <h3 className="text-[13px] font-black text-[#202a3b]">{title}</h3>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h3 className="text-[13px] font-black text-[#202a3b]">{title}</h3>
+          {!isEditing && canEdit && missingRequiredCount > 0 && (
+            <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-600">
+              {missingRequiredCount} required missing
+            </span>
+          )}
+        </div>
 
         {canEdit && !isEditing && (
           <button

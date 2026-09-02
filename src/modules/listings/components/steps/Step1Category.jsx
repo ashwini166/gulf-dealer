@@ -99,8 +99,10 @@ const Step1Category = () => {
     const subtitleMap = {
       car: "BMW, Audi, Mercedes",
       cars: "BMW, Audi, Mercedes",
-      bike: "Honda, Hero, Suzuki",
-      bikes: "Honda, Hero, Suzuki",
+      motercycle: "Honda, Hero, Suzuki",
+      motercycles: "Honda, Hero, Suzuki",
+      motorcycle: "Honda, Hero, Suzuki",
+      motorcycles: "Honda, Hero, Suzuki",
       "heavy equipment": "Benz, Volvo",
       "heavy equipments": "Benz, Volvo",
       "special number": "BMW, Audi, Mercedes",

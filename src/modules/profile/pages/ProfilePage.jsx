@@ -54,7 +54,7 @@ const BUSINESS_CATEGORY_OPTIONS = [
 
 const VEHICLE_CATEGORY_OPTIONS = [
   "Cars",
-  "Motorbikes",
+  "Motorcycles",
   "Commercial Vehicles",
   "Heavy Equipment",
   "Buggies",

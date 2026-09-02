@@ -1,32 +1,3 @@
-const BIKE_CATEGORIES = [
-  "Sport Bike",
-  "Naked Bike",
-  "Super Sport",
-  "Cruiser",
-  "Touring Bike",
-  "Adventure Bike (ADV)",
-  "Dual Sport",
-  "Enduro",
-  "Motocross",
-  "Dirt Bike",
-  "Supermoto",
-  "Street Bike",
-  "Cafe Racer",
-  "Scrambler",
-  "Bobber",
-  "Chopper",
-  "Scooter",
-  "Maxi Scooter",
-  "Moped",
-  "Underbone",
-  "Electric Motorcycle",
-  "Electric Scooter",
-  "Mini Bike",
-  "Pocket Bike",
-  "ATV / Quad Bike",
-  "Sidecar Motorcycle",
-];
-
 const MOTORBIKE_COLOR_OPTIONS = [
   "Black", "White", "Silver", "Grey", "Matte Black", "Matte Grey",
   "Blue", "Red", "Green", "Orange", "Yellow", "Brown", "Beige",
@@ -39,9 +10,9 @@ const MOTORBIKE_COLOR_OPTIONS = [
 
 export const motorbikeFormConfig = {
   key: "MOTORBIKE",
-  label: "Motorbike",
+  label: "Motorcycle",
   engineSectionTitle: "Technical Specifications",
-  engineSectionDescription: "Add technical details specific to the motorbike.",
+  engineSectionDescription: "Add technical details specific to the motorcycle.",
 
   vehicleInfoFields: [
     { name: "title", label: "Listing Title", type: "text", required: true, span: 2, placeholder: "e.g. 2023 Ducati Panigale V4S" },
@@ -52,16 +23,14 @@ export const motorbikeFormConfig = {
     { name: "sellerName", label: "Seller Name", type: "text", required: true, placeholder: "e.g. Ahmed Al Rashid" },
     {
       name: "bikeCategory",
-      label: "Bike Category",
+      label: "Motorcycle Category",
       type: "select",
       required: true,
-      options: BIKE_CATEGORIES,
     },
     {
       name: "bikeType",
-      label: "Bike Type",
+      label: "Motorcycle Type",
       type: "select",
-      options: BIKE_CATEGORIES,
     },
     { name: "mileage", label: "Mileage", type: "number", required: true, placeholder: "e.g. 4500" },
     { name: "exteriorColor", label: "Exterior Color", type: "colorSwatch", required: true, swatches: MOTORBIKE_COLOR_OPTIONS, span: 2 },
@@ -72,8 +41,8 @@ export const motorbikeFormConfig = {
     { name: "whatsappNumber", label: "WhatsApp Number", type: "phone", required: true, placeholder: "7767754397" },
     { name: "whatsappAvailable", label: "WhatsApp available on mobile number", type: "toggleSwitch", fullWidth: true, description: "Turn on to use the same mobile number for WhatsApp." },
     { name: "contactEmail", label: "Contact Email Address", type: "email", required: true, placeholder: "e.g. seller@example.com" },
-    { name: "description", label: "Description", type: "textarea", required: true, span: 2, placeholder: "Describe the bike's condition, history, and standout features..." },
-    { name: "hasLoanOption", label: "Available on Loan", description: "Buyer can apply for financing on this bike", type: "toggleSwitch", span: 2 },
+    { name: "description", label: "Description", type: "textarea", required: true, span: 2, placeholder: "Describe the motorcycle's condition, history, and standout features..." },
+    { name: "hasLoanOption", label: "Available on Loan", description: "Buyer can apply for financing on this motorcycle", type: "toggleSwitch", span: 2 },
   ],
 
   specsFields: [
