@@ -35,7 +35,7 @@ const Step7Media = () => {
   const hasSecondaryGallery = Boolean(config.hasSecondaryGallery);
   const secondaryGalleryLabel = config.secondaryGalleryLabel || "Additional Images";
 
-  const [existingSecondaryImages, setExistingSecondaryImages] = useState(
+  const [existingSecondaryImages] = useState(
     listing?.media?.secondaryImages || []
   );
   const [newSecondaryImageFiles, setNewSecondaryImageFiles] = useState([]);
@@ -61,6 +61,7 @@ const Step7Media = () => {
   const [brochureName, setBrochureName] = useState(existingBrochure ? "Uploaded brochure" : "");
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [mediaErrors, setMediaErrors] = useState({});
   const [isDraggingImages, setIsDraggingImages] = useState(false);
 
   const featuredInputRef = useRef(null);
@@ -78,6 +79,7 @@ const Step7Media = () => {
     setFeaturedPreview(URL.createObjectURL(file));
     setExistingFeaturedImage(null);
     setErrorMessage("");
+    setMediaErrors((previous) => ({ ...previous, featuredImage: "" }));
   };
 
   const addImageFiles = (files) => {
@@ -86,6 +88,7 @@ const Step7Media = () => {
 
     if (remainingSlots <= 0) {
       setErrorMessage(`Your plan allows a maximum of ${maxPhotos} photos. Remove some to add more.`);
+      setMediaErrors((previous) => ({ ...previous, images: "Photo limit reached" }));
       return;
     }
 
@@ -95,6 +98,7 @@ const Step7Media = () => {
       setErrorMessage(`Only ${filesToAdd.length} photo(s) added — your plan's limit of ${maxPhotos} photos was reached.`);
     } else {
       setErrorMessage("");
+      setMediaErrors((previous) => ({ ...previous, images: "" }));
     }
 
     setNewImageFiles((previous) => [...previous, ...filesToAdd]);
@@ -142,6 +146,7 @@ const Step7Media = () => {
 
     if (!videoAllowed) {
       setErrorMessage("Your current plan does not include video uploads.");
+      setMediaErrors((previous) => ({ ...previous, video: "Video is not included in your plan" }));
       return;
     }
 
@@ -149,6 +154,7 @@ const Step7Media = () => {
     setVideoName(file.name);
     setExistingVideo(null);
     setErrorMessage("");
+    setMediaErrors((previous) => ({ ...previous, video: "" }));
   };
 
   const removeVideo = () => {
@@ -180,6 +186,10 @@ const Step7Media = () => {
   const handleNext = async () => {
     if (!featuredFile && !existingFeaturedImage) {
       setErrorMessage("Featured image is required");
+      setMediaErrors((previous) => ({
+        ...previous,
+        featuredImage: "Featured image is required",
+      }));
       scrollElementIntoWizardView(featuredFieldRef.current);
       return;
     }
@@ -227,7 +237,13 @@ const Step7Media = () => {
         />
 
         {featuredPreview ? (
-          <div className="relative h-40 w-full overflow-hidden rounded-xl border border-slate-200 sm:w-64">
+          <div
+            className={`relative h-40 w-full overflow-hidden rounded-xl border sm:w-64 ${
+              mediaErrors.featuredImage
+                ? "border-red-400 ring-2 ring-red-400 ring-offset-1"
+                : "border-slate-200"
+            }`}
+          >
             <img src={featuredPreview} alt="Featured" className="h-full w-full object-cover" />
             <button
               type="button"
@@ -241,7 +257,11 @@ const Step7Media = () => {
           <button
             type="button"
             onClick={() => featuredInputRef.current?.click()}
-            className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 text-slate-400 transition-colors duration-200 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-500 sm:w-64"
+            className={`flex h-40 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed text-slate-400 transition-colors duration-200 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-500 sm:w-64 ${
+              mediaErrors.featuredImage
+                ? "border-red-400 ring-2 ring-red-400 ring-offset-1"
+                : "border-slate-300"
+            }`}
           >
             <ImagePlus size={26} />
             <span className="text-sm font-medium">Click to upload featured image</span>
@@ -271,7 +291,11 @@ const Step7Media = () => {
           onDrop={handleImagesDrop}
           onClick={() => imagesInputRef.current?.click()}
           className={`flex h-28 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed transition-all duration-200 ${
-            isDraggingImages ? "border-blue-500 bg-blue-50" : "border-slate-300 text-slate-400 hover:border-blue-400 hover:bg-blue-50/50"
+            mediaErrors.images
+              ? "border-red-400 text-red-500 ring-2 ring-red-400 ring-offset-1"
+              : isDraggingImages
+                ? "border-blue-500 bg-blue-50"
+                : "border-slate-300 text-slate-400 hover:border-blue-400 hover:bg-blue-50/50"
           }`}
         >
           <Upload size={20} />
@@ -395,7 +419,11 @@ const Step7Media = () => {
             type="button"
             onClick={() => videoAllowed && videoInputRef.current?.click()}
             disabled={!videoAllowed}
-            className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 px-4 py-3 text-sm font-medium text-blue-600 transition-colors duration-200 hover:border-blue-400 hover:bg-blue-50/50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:border-slate-300 disabled:hover:bg-transparent"
+            className={`flex w-full items-center gap-2 rounded-xl border-2 border-dashed px-4 py-3 text-sm font-medium text-blue-600 transition-colors duration-200 hover:border-blue-400 hover:bg-blue-50/50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:border-slate-300 disabled:hover:bg-transparent ${
+              mediaErrors.video
+                ? "border-red-400 ring-2 ring-red-400 ring-offset-1"
+                : "border-slate-300"
+            }`}
           >
             <Video size={17} />
             Upload a vehicle walkthrough video

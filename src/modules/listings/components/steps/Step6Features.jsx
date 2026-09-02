@@ -26,12 +26,15 @@ const Step6Features = () => {
 
   const formType = listing?.category?.vehicleFormType || "CAR";
   const config = configByFormType[formType] || carFormConfig;
+  const featureGroups = Array.isArray(config?.featureGroups)
+    ? config.featureGroups
+    : [];
 
   const existingFeatures = listing?.features || {};
 
   const buildInitialSelected = () => {
     const initial = {};
-    config.featureGroups.forEach((group) => {
+    featureGroups.forEach((group) => {
       initial[group.key] = existingFeatures[group.key] || [];
     });
     return initial;
@@ -41,7 +44,7 @@ const Step6Features = () => {
 
   const toggleFeature = (groupKey, option) => {
     setSelected((previous) => {
-      const current = previous[groupKey];
+      const current = previous[groupKey] || [];
       const next = current.includes(option)
         ? current.filter((item) => item !== option)
         : [...current, option];
@@ -60,21 +63,29 @@ const Step6Features = () => {
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-slate-950">{config.label} Features</h2>
+      <h2 className="text-lg font-bold text-slate-950">Vehicle Features</h2>
       <p className="mt-1 text-sm text-slate-500">Select all features included with your vehicle.</p>
 
-      <div className="mt-5 space-y-3">
-        {config.featureGroups.map((group, index) => (
-          <CollapsibleFeatureGroup
-            key={group.key}
-            title={group.label}
-            options={group.options}
-            selectedValues={selected[group.key]}
-            onToggle={(option) => toggleFeature(group.key, option)}
-            defaultOpen={index === 0}
-          />
-        ))}
-      </div>
+      {featureGroups.length === 0 ? (
+        <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-5">
+          <p className="text-sm text-slate-600">
+            No additional features are available for this vehicle category.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-3">
+          {featureGroups.map((group, index) => (
+            <CollapsibleFeatureGroup
+              key={group.key}
+              title={group.label}
+              options={group.options}
+              selectedValues={selected[group.key]}
+              onToggle={(option) => toggleFeature(group.key, option)}
+              defaultOpen={index === 0}
+            />
+          ))}
+        </div>
+      )}
 
       <WizardFooterNav
         onPrevious={goPrevious}

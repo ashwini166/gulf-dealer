@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import { carFormConfig } from "../../config/categoryForms/carForm.config";
@@ -48,6 +48,12 @@ const Step5Specs = () => {
   const [form, setForm] = useState(buildInitialForm);
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
+
+  useEffect(() => {
+    if (!listing?.specs) return;
+    setForm(buildInitialForm());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing?.specs, formType]);
 
   const handleChange = (fieldName, value) => {
     setForm((previous) => ({ ...previous, [fieldName]: value }));
