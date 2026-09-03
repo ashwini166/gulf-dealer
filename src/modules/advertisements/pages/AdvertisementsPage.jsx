@@ -1218,8 +1218,8 @@ export default function AdvertisementsPage() {
               {ad.status !== "DRAFT" ? (
                 <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-500">
                   <span>Views: {(ad.viewCount || 0).toLocaleString()}</span>
-                  <span>Starts: {formatDate(ad.startsAt || ad.createdAt)}</span>
-                  <span>Ends: {formatDate(ad.endsAt)}</span>
+                  <span>Starts: {ad.startsAt ? formatDate(ad.startsAt) : "After approval"}</span>
+                  <span>Ends: {ad.endsAt ? formatDate(ad.endsAt) : "After approval"}</span>
                   <span className="font-bold text-slate-900">{formatCurrency(ad.totalAmount || ad.price)}</span>
                 </div>
               ) : null}

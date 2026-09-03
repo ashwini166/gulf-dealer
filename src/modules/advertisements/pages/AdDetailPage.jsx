@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Check,
   Download,
-  ExternalLink,
   FileText,
   Layers,
   Monitor,
@@ -162,7 +161,8 @@ export default function AdDetailPage() {
   const config = categoryConfig[ad.category] || categoryConfig.HOME_PAGE_BANNER;
   const activeDevice = devices.find((item) => item.key === device) || devices[0];
   const creativeUrl = ad.creatives?.[device]?.url || ad.creatives?.desktop?.url;
-  const startDate = ad.startsAt || ad.createdAt;
+  const startDate = ad.startsAt || null;
+  const isAwaitingApproval = ad.status === "PENDING" && !startDate;
 
   // Fields the backend does not currently provide stay undefined until
   // the schema/service layer actually supports them — never hardcoded —
@@ -187,6 +187,8 @@ export default function AdDetailPage() {
       ? new Date(new Date(startDate).getTime() + totalDays * 24 * 60 * 60 * 1000)
       : null;
   const endDate = ad.endsAt || computedEndDate;
+  const startDateLabel = isAwaitingApproval ? "After admin approval" : formatDate(startDate);
+  const endDateLabel = isAwaitingApproval ? "After admin approval" : formatDate(endDate);
 
   return (
     <div className="flex flex-col gap-6">
@@ -317,8 +319,8 @@ export default function AdDetailPage() {
               right={{ label: "Duration", value: durationLabel }}
             />
             <InfoRow
-              left={{ label: "Start Date", value: formatDate(startDate) }}
-              right={{ label: "End Date", value: formatDate(endDate) }}
+              left={{ label: "Start Date", value: startDateLabel }}
+              right={{ label: "End Date", value: endDateLabel }}
             />
             <InfoRow
               left={{ label: "Priority", value: priorityLabel }}

@@ -109,7 +109,9 @@ export default function SubscriptionPage() {
         return payment;
       }
 
-      await wait(2000);
+      // Poll a little faster so successful Tap returns surface promptly without
+      // changing the existing retry count or terminal status handling.
+      await wait(1000);
     }
 
     return null;
