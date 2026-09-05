@@ -4,11 +4,14 @@ import { Loader2, Pencil, X } from "lucide-react";
 import DynamicField from "../formFields/DynamicField";
 import { saveListingStepApi } from "../../api/listingDetailApi";
 import { useToast } from "../../../../context/ToastContext";
+import { getOptionDisplayLabel } from "../../config/listingAttributeConfig";
 
 const formatDisplayValue = (field, rawValue) => {
   if (rawValue === undefined || rawValue === null || rawValue === "") return "—";
 
   if (field.type === "colorSwatch") {
+    const label = getOptionDisplayLabel(field.swatches, rawValue);
+    if (label && label !== String(rawValue)) return label;
     const value = String(rawValue);
     if (value.startsWith("#")) return value;
     return value
@@ -19,6 +22,9 @@ const formatDisplayValue = (field, rawValue) => {
   }
   if (field.type === "toggleSwitch") return rawValue ? "Yes" : "No";
   if (field.type === "yesNoSelect") return rawValue === true || rawValue === "true" ? "Yes" : "No";
+  if (field.options || field.swatches) {
+    return getOptionDisplayLabel(field.options || field.swatches, rawValue);
+  }
   if (field.type === "brandSelect" || field.type === "modelSelect") {
     return typeof rawValue === "object" ? rawValue.name : "—";
   }

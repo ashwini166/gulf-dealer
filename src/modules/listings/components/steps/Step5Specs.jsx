@@ -11,6 +11,7 @@ import { specialNumberFormConfig } from "../../config/categoryForms/specialNumbe
 import DynamicField from "../formFields/DynamicField";
 import WizardFooterNav from "../WizardFooterNav";
 import { scrollFirstWizardError } from "../../utils/wizardScroll";
+import { useListingAttributeConfig } from "../../hooks/useListingAttributeConfig";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -25,8 +26,10 @@ const configByFormType = {
 const Step5Specs = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
 
+  const categoryId = listing?.category?._id || listing?.category;
   const formType = listing?.category?.vehicleFormType || "CAR";
-  const config = configByFormType[formType] || carFormConfig;
+  const baseConfig = configByFormType[formType] || carFormConfig;
+  const { config } = useListingAttributeConfig(categoryId, baseConfig);
 
   const existingSpecs = listing?.specs || {};
 
@@ -133,6 +136,7 @@ const Step5Specs = () => {
                 onChange={(value) => handleChange(field.name, value)}
                 error={errors[field.name]}
                 form={form}
+                categoryId={categoryId}
               />
               {errors[field.name] && (
                 <p className="mt-1 text-xs font-medium text-red-600">{errors[field.name]}</p>

@@ -72,6 +72,12 @@ const fieldClass =
 
 const textareaClass =
   "mt-2 min-h-24 w-full resize-none rounded-lg border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-800 outline-none focus:border-blue-500";
+const DESCRIPTION_LIMIT = 500;
+const getCounterClass = (currentLength, maxLength) => {
+  if (currentLength >= maxLength) return "text-red-600";
+  if (currentLength >= maxLength * 0.9) return "text-amber-600";
+  return "text-slate-400";
+};
 
 const buildFormValues = (profile = {}) => ({
   businessName: profile.businessName || "",
@@ -182,9 +188,14 @@ function ProfileForm({ initialValues, locks = {}, submitLabel, onSaved }) {
   const [error, setError] = useState("");
 
   const update = (field) => (event) => {
+    const value =
+      field === "description"
+        ? event.target.value.slice(0, DESCRIPTION_LIMIT)
+        : event.target.value;
+
     setForm((current) => ({
       ...current,
-      [field]: event.target.value,
+      [field]: value,
     }));
   };
 
@@ -355,10 +366,13 @@ function ProfileForm({ initialValues, locks = {}, submitLabel, onSaved }) {
         <Field label="Description">
           <textarea
             className={textareaClass}
-            maxLength={500}
+            maxLength={DESCRIPTION_LIMIT}
             value={form.description}
             onChange={update("description")}
           />
+          <div className={`mt-1 text-right text-xs font-medium ${getCounterClass(form.description.length, DESCRIPTION_LIMIT)}`}>
+            {form.description.length}/{DESCRIPTION_LIMIT} characters
+          </div>
         </Field>
       </div>
 

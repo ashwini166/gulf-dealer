@@ -26,3 +26,8 @@ export const getFacetOptionOptionsApi = async (params) => {
   const { data } = await apiClient.get(`${BASE_URL}/facet-options/options`, { params });
   return data.data;
 };
+
+export const getListingAttributeOptionsApi = async (params) => {
+  const { data } = await apiClient.get(`${BASE_URL}/listing-attributes/options`, { params });
+  return data.data;
+};

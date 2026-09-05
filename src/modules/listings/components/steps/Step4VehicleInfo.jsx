@@ -15,6 +15,7 @@ import WizardFooterNav from "../WizardFooterNav";
 import PlateSummary from "../detail/PlateSummary";
 import { scrollFirstWizardError } from "../../utils/wizardScroll";
 import { normalizePhoneContact, validatePhoneContact } from "../../utils/phoneNumber";
+import { useListingAttributeConfig } from "../../hooks/useListingAttributeConfig";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -32,7 +33,8 @@ const Step4VehicleInfo = () => {
 
   const categoryId = listing?.category?._id || listing?.category;
   const formType = listing?.category?.vehicleFormType || "CAR";
-  const config = configByFormType[formType] || carFormConfig;
+  const baseConfig = configByFormType[formType] || carFormConfig;
+  const { config } = useListingAttributeConfig(categoryId, baseConfig);
   const infoTitle =
     formType === "SPECIAL_NUMBER" ? "Plate Info" : `${config.label} Information`;
 

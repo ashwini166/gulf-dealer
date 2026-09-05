@@ -1,5 +1,8 @@
 const FeaturesDisplay = ({ config, features }) => {
   if (!config || !features) return null;
+  const getOptionValue = (option) => (typeof option === "string" ? option : option.value);
+  const getFeatureLabel = (group, value) =>
+    (group.options || []).find((option) => getOptionValue(option) === value)?.label || value;
 
   return (
     <div className="overflow-hidden rounded-[12px] border border-[#e5eaf1] bg-white">
@@ -24,7 +27,7 @@ const FeaturesDisplay = ({ config, features }) => {
                   key={feature}
                   className="rounded-[7px] border border-[#e6ebf2] bg-[#f7f9fc] px-3 py-1.5 text-xs font-semibold text-[#657387]"
                 >
-                  {feature}
+                  {getFeatureLabel(group, feature)}
                 </span>
               ))}
             </div>

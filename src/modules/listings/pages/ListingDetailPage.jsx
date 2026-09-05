@@ -33,6 +33,7 @@ import CustomerInquiries from "../components/detail/CustomerInquiries";
 import SellerInfoCard from "../components/detail/SellerInfoCard";
 import { submitSingleBulkListingApi } from "../api/bulkListingApi";
 import heroImage from "../../../assets/hero.png";
+import { useListingAttributeConfig } from "../hooks/useListingAttributeConfig";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -562,6 +563,11 @@ const ListingDetailPage = () => {
     }
   };
 
+  const formType = listing?.category?.vehicleFormType || "CAR";
+  const categoryId = listing?.category?._id || listing?.category;
+  const baseConfig = configByFormType[formType] || carFormConfig;
+  const { config } = useListingAttributeConfig(categoryId, baseConfig);
+
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -579,10 +585,6 @@ const ListingDetailPage = () => {
       </div>
     );
   }
-
-  const formType = listing.category?.vehicleFormType || "CAR";
-  const config = configByFormType[formType] || carFormConfig;
-  const categoryId = listing.category?._id || listing.category;
 
   const canEdit = EDITABLE_STATUSES.includes(listing.status) && !listing.isSold;
   const vehicleInfo = listing.vehicleInfo || {};

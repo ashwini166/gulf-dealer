@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useBulkVehicleWizard } from "../../context/BulkVehicleWizardContext";
 import { carFormConfig } from "../../config/categoryForms/carForm.config";
@@ -10,6 +10,7 @@ import { caravanFormConfig } from "../../config/categoryForms/caravanForm.config
 import { specialNumberFormConfig } from "../../config/categoryForms/specialNumberForm.config";
 import CollapsibleFeatureGroup from "../CollapsibleFeatureGroup";
 import WizardFooterNav from "../WizardFooterNav";
+import { useListingAttributeConfig } from "../../hooks/useListingAttributeConfig";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -24,8 +25,10 @@ const configByFormType = {
 const Step6Features = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
 
+  const categoryId = listing?.category?._id || listing?.category;
   const formType = listing?.category?.vehicleFormType || "CAR";
-  const config = configByFormType[formType] || carFormConfig;
+  const baseConfig = configByFormType[formType] || carFormConfig;
+  const { config } = useListingAttributeConfig(categoryId, baseConfig);
   const featureGroups = Array.isArray(config?.featureGroups)
     ? config.featureGroups
     : [];
@@ -41,6 +44,19 @@ const Step6Features = () => {
   };
 
   const [selected, setSelected] = useState(buildInitialSelected);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSelected((previous) => ({
+        ...buildInitialSelected(),
+        ...previous,
+      }));
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId, formType, featureGroups.length]);
 
   const toggleFeature = (groupKey, option) => {
     setSelected((previous) => {
@@ -51,9 +67,23 @@ const Step6Features = () => {
 
       return { ...previous, [groupKey]: next };
     });
+    setErrors((previous) => ({ ...previous, [groupKey]: "" }));
   };
 
   const handleNext = async () => {
+    const nextErrors = {};
+
+    featureGroups.forEach((group) => {
+      if (group.required && !(selected[group.key] || []).length) {
+        nextErrors[group.key] = `${group.label} is required`;
+      }
+    });
+
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      return;
+    }
+
     try {
       await saveStep(6, selected);
     } catch {
@@ -75,14 +105,18 @@ const Step6Features = () => {
       ) : (
         <div className="mt-5 space-y-3">
           {featureGroups.map((group, index) => (
-            <CollapsibleFeatureGroup
-              key={group.key}
-              title={group.label}
-              options={group.options}
-              selectedValues={selected[group.key]}
-              onToggle={(option) => toggleFeature(group.key, option)}
-              defaultOpen={index === 0}
-            />
+            <div key={group.key}>
+              <CollapsibleFeatureGroup
+                title={group.required ? `${group.label} *` : group.label}
+                options={group.options}
+                selectedValues={selected[group.key]}
+                onToggle={(option) => toggleFeature(group.key, option)}
+                defaultOpen={index === 0}
+              />
+              {errors[group.key] ? (
+                <p className="mt-1 text-xs font-medium text-red-600">{errors[group.key]}</p>
+              ) : null}
+            </div>
           ))}
         </div>
       )}

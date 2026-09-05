@@ -2,11 +2,14 @@ import { useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
 
 const CollapsibleFeatureGroup = ({ title, options, selectedValues, onToggle, defaultOpen = true }) => {
+  const selected = Array.isArray(selectedValues) ? selectedValues : [];
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [search, setSearch] = useState("");
+  const getOptionValue = (option) => (typeof option === "string" ? option : option.value);
+  const getOptionLabel = (option) => (typeof option === "string" ? option : option.label);
 
-  const filteredOptions = options.filter((option) =>
-    option.toLowerCase().includes(search.toLowerCase())
+  const filteredOptions = (options || []).filter((option) =>
+    getOptionLabel(option).toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -18,9 +21,9 @@ const CollapsibleFeatureGroup = ({ title, options, selectedValues, onToggle, def
       >
         <span className="text-sm font-semibold text-slate-900">
           {title}
-          {selectedValues.length > 0 && (
+          {selected.length > 0 && (
             <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-              {selectedValues.length}
+              {selected.length}
             </span>
           )}
         </span>
@@ -46,19 +49,21 @@ const CollapsibleFeatureGroup = ({ title, options, selectedValues, onToggle, def
 
             <div className="flex flex-wrap gap-2">
               {filteredOptions.map((option) => {
-                const isSelected = selectedValues.includes(option);
+                const optionValue = getOptionValue(option);
+                const optionLabel = getOptionLabel(option);
+                const isSelected = selected.includes(optionValue);
                 return (
                   <button
-                    key={option}
+                    key={optionValue}
                     type="button"
-                    onClick={() => onToggle(option)}
+                    onClick={() => onToggle(optionValue)}
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-150 active:scale-95 ${
                       isSelected
                         ? "border-blue-600 bg-blue-600 text-white"
                         : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50"
                     }`}
                   >
-                    {option}
+                    {optionLabel}
                   </button>
                 );
               })}

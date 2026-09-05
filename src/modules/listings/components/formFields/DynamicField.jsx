@@ -22,6 +22,14 @@ const dynamicFacetFields = new Set([
   "bikeCategory",
   "bikeType",
 ]);
+const getTextareaLimit = (field) =>
+  field.maxLength || (field.name === "description" ? 2000 : undefined);
+const getCounterClass = (currentLength, maxLength) => {
+  if (!maxLength) return "text-slate-400";
+  if (currentLength >= maxLength) return "text-red-600";
+  if (currentLength >= maxLength * 0.9) return "text-amber-600";
+  return "text-slate-400";
+};
 
 const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
   const errorClass = error ? "border-red-400 ring-2 ring-red-400 ring-offset-1" : "border-slate-300";
@@ -138,15 +146,30 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
       );
 
     case "textarea":
+      {
+        const maxLength = getTextareaLimit(field);
+        const currentLength = String(value ?? "").length;
+
       return (
-        <textarea
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={field.placeholder}
-          rows={4}
-          className={`${baseInputClass} ${errorClass} h-auto resize-none py-2.5`}
-        />
+        <div>
+          <textarea
+            value={value ?? ""}
+            onChange={(e) =>
+              onChange(maxLength ? e.target.value.slice(0, maxLength) : e.target.value)
+            }
+            maxLength={maxLength}
+            placeholder={field.placeholder}
+            rows={4}
+            className={`${baseInputClass} ${errorClass} h-auto resize-none py-2.5`}
+          />
+          {maxLength ? (
+            <div className={`mt-1 text-right text-xs font-medium ${getCounterClass(currentLength, maxLength)}`}>
+              {currentLength}/{maxLength} characters
+            </div>
+          ) : null}
+        </div>
       );
+      }
 
       case "url":
       return (
