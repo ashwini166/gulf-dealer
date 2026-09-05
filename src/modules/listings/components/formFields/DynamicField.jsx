@@ -18,7 +18,6 @@ const baseInputClass =
   "h-10 w-full rounded-lg border bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
 const dynamicFacetFields = new Set([
   "bodyType",
-  "vehicleType",
   "equipmentType",
   "bikeCategory",
   "bikeType",

@@ -3,6 +3,30 @@ export const COMMERCIAL_COLOR_SWATCHES = [
   "#2563eb", "#0891b2", "#dc2626", "#7c2d12", "#16a34a",
   "#166534", "#ca8a04", "#facc15", "#ea580c", "#7c3aed",
 ];
+
+export const COMMERCIAL_VEHICLE_TYPE_OPTIONS = [
+  "Ambulance",
+  "Bus",
+  "Cargo Van",
+  "Car Carrier",
+  "Car Transporter",
+  "Chassis Cab",
+  "Container Truck",
+  "Crew Bus",
+  "Delivery Van",
+  "Flatbed Truck",
+  "Food Truck",
+  "Mini Bus",
+  "Mini Truck",
+  "Panel Van",
+  "Pickup Truck",
+  "Prime Mover",
+  "Refrigerated Truck",
+  "Recovery Truck",
+  "School Bus",
+  "Water Tanker Truck",
+];
+
 export const commercialFormConfig = {
   key: "COMMERCIAL",
   label: "Commercial Vehicle",
@@ -12,7 +36,7 @@ export const commercialFormConfig = {
     { name: "brand", label: "Brand", type: "brandSelect", required: true },
     { name: "catalogModel", label: "Model", type: "modelSelect", required: true },
     { name: "variantTrim", label: "Variant / Trim", type: "variantSelect" },
-    { name: "vehicleType", label: "Vehicle Type", type: "select", required: true },
+    { name: "vehicleType", label: "Vehicle Type", type: "select", required: true, options: COMMERCIAL_VEHICLE_TYPE_OPTIONS },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
     { name: "sellerName", label: "Seller Name", type: "text", required: true, placeholder: "e.g. Fleet Motors Bahrain" },
     { name: "bodyType", label: "Body Type", type: "select", required: true },
