@@ -6,15 +6,20 @@ const normalizeToken = (value = "") =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-export const normalizeListingAttributeOption = (option) => {
+const isHexColor = (value = "") => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(value).trim());
+
+export const normalizeListingAttributeOption = (option, { useLabelAsValue = false } = {}) => {
   if (typeof option === "string") {
-    return { value: normalizeToken(option), label: option };
+    return { value: useLabelAsValue ? option : normalizeToken(option), label: option };
   }
 
+  const label = option?.label || option?.value || "";
+  const value = useLabelAsValue ? label : option?.value || normalizeToken(label);
+
   return {
-    value: option?.value || normalizeToken(option?.label || ""),
-    label: option?.label || option?.value || "",
-    color: option?.color,
+    value,
+    label,
+    color: option?.color || (useLabelAsValue && isHexColor(option?.value) ? option.value : undefined),
   };
 };
 
@@ -26,7 +31,9 @@ const mergeField = (field, attributeMap) => {
 
   if (!attribute) return field;
 
-  const options = (attribute.options || []).map(normalizeListingAttributeOption).filter((option) => option.value);
+  const options = (attribute.options || [])
+    .map((option) => normalizeListingAttributeOption(option, { useLabelAsValue: field.type === "colorSwatch" }))
+    .filter((option) => option.value);
   const nextField = {
     ...field,
     label: attribute.label || field.label,

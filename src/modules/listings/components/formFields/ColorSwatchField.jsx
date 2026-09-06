@@ -73,14 +73,14 @@ const ColorSwatchField = ({ value, onChange, swatches, error }) => {
       {swatches.map((color) => {
         const optionValue = typeof color === "string" ? color : color.value;
         const label = typeof color === "string" ? color : color.label;
-        const isSelected = value === optionValue;
+        const isSelected = value === label || value === optionValue;
         const fillColor = getSwatchColor(color);
 
         return (
           <button
             key={optionValue}
             type="button"
-            onClick={() => onChange(optionValue)}
+            onClick={() => onChange(label)}
             style={{ backgroundColor: fillColor }}
             className={`h-8 w-8 shrink-0 rounded-full border-2 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
               isSelected ? "border-white ring-2 ring-blue-600 ring-offset-2" : "border-slate-300 hover:scale-105 hover:border-slate-400"
