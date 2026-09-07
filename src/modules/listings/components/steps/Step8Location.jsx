@@ -19,6 +19,7 @@ import { buggyFormConfig } from "../../config/categoryForms/buggyForm.config";
 import { caravanFormConfig } from "../../config/categoryForms/caravanForm.config";
 import { specialNumberFormConfig } from "../../config/categoryForms/specialNumberForm.config";
 import { scrollFirstWizardError } from "../../utils/wizardScroll";
+import useAuth from "../../../auth/hooks/useAuth";
 
 const configByFormType = {
   CAR: carFormConfig,
@@ -35,6 +36,7 @@ const inputClass =
 
 const Step8Location = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
+  const { user } = useAuth();
 
   const formType = listing?.category?.vehicleFormType || "CAR";
   const config = configByFormType[formType] || carFormConfig;
@@ -54,7 +56,10 @@ const Step8Location = () => {
     normalizedState
   );
 
-  const [country, setCountry] = useState(normalizedCountry);
+  const accountCountry =
+    GULF_COUNTRIES.find((item) => item.iso2 === user?.countryIso)?.name || "";
+
+  const [country, setCountry] = useState(accountCountry || normalizedCountry);
   const [governorate, setGovernorate] = useState(normalizedState);
   const [city, setCity] = useState(normalizedCity);
   const [area, setArea] = useState(existingLocation.area || "");
@@ -64,14 +69,19 @@ const Step8Location = () => {
 
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
+  const selectedCountry = accountCountry || country;
 
   const governorateOptions = useMemo(() => {
-    return GULF_COUNTRIES.find((item) => item.name === country)?.governorates || [];
-  }, [country]);
+    return GULF_COUNTRIES.find((item) => item.name === selectedCountry)?.governorates || [];
+  }, [selectedCountry]);
+  const selectedGovernorate = governorateOptions.some((item) => item.name === governorate)
+    ? governorate
+    : "";
 
   const cityOptions = useMemo(() => {
-    return governorateOptions.find((item) => item.name === governorate)?.cities || [];
-  }, [governorate, governorateOptions]);
+    return governorateOptions.find((item) => item.name === selectedGovernorate)?.cities || [];
+  }, [governorateOptions, selectedGovernorate]);
+  const selectedCity = cityOptions.includes(city) ? city : "";
 
   const handleCountryChange = (value) => {
     setCountry(value);
@@ -94,9 +104,9 @@ const Step8Location = () => {
   const handleNext = async () => {
     const nextErrors = {};
 
-    if (!country) nextErrors.country = "Country is required";
-    if (!governorate) nextErrors.governorate = "State / Governorate is required";
-    if (!city) nextErrors.city = "City is required";
+    if (!selectedCountry) nextErrors.country = "Country is required";
+    if (!selectedGovernorate) nextErrors.governorate = "State / Governorate is required";
+    if (!selectedCity) nextErrors.city = "City is required";
     if (hasAreaField && !area) nextErrors.area = "Area is required";
     if (mapsLink && !/^https?:\/\/.+/i.test(mapsLink.trim())) {
       nextErrors.mapsLink = "Enter a valid Google Maps link";
@@ -110,9 +120,9 @@ const Step8Location = () => {
 
     try {
       await saveStep(8, {
-        country,
-        governorate,
-        city,
+        country: selectedCountry,
+        governorate: selectedGovernorate,
+        city: selectedCity,
         area: hasAreaField ? area : undefined,
         mapsLink: mapsLink.trim() || undefined,
         showPhoneNumber,
@@ -131,7 +141,12 @@ const Step8Location = () => {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div ref={(node) => { fieldRefs.current.country = node; }}>
         <FormField label="Country" required error={errors.country}>
-          <select value={country} onChange={(e) => handleCountryChange(e.target.value)} className={inputClass}>
+          <select
+            value={selectedCountry}
+            onChange={(e) => handleCountryChange(e.target.value)}
+            disabled={Boolean(accountCountry)}
+            className={inputClass}
+          >
             <option value="">Select country</option>
             {GULF_COUNTRIES.map((item) => (
               <option key={item.name} value={item.name}>{item.name}</option>
@@ -142,7 +157,7 @@ const Step8Location = () => {
 
         <div ref={(node) => { fieldRefs.current.governorate = node; }}>
         <FormField label="State / Governorate" required error={errors.governorate}>
-          <select value={governorate} onChange={(e) => handleGovernorateChange(e.target.value)} disabled={!country} className={inputClass}>
+          <select value={selectedGovernorate} onChange={(e) => handleGovernorateChange(e.target.value)} disabled={!selectedCountry} className={inputClass}>
             <option value="">Select state / governorate</option>
             {governorateOptions.map((item) => (
               <option key={item.name} value={item.name}>{item.name}</option>
@@ -153,7 +168,7 @@ const Step8Location = () => {
 
         <div className={hasAreaField ? "" : "sm:col-span-2"} ref={(node) => { fieldRefs.current.city = node; }}>
         <FormField label="City" required error={errors.city}>
-          <select value={city} onChange={(e) => handleCityChange(e.target.value)} disabled={!governorate} className={inputClass}>
+          <select value={selectedCity} onChange={(e) => handleCityChange(e.target.value)} disabled={!selectedGovernorate} className={inputClass}>
             <option value="">Select city</option>
             {cityOptions.map((item) => (
               <option key={item} value={item}>{item}</option>
@@ -173,7 +188,7 @@ const Step8Location = () => {
                 setErrors((previous) => ({ ...previous, area: "" }));
               }}
               placeholder="e.g. Adliya, Deira, Al Olaya"
-              disabled={!city}
+              disabled={!selectedCity}
               className={inputClass}
             />
           </FormField>

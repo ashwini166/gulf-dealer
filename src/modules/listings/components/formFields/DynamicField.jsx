@@ -118,7 +118,8 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          className={`${baseInputClass} ${errorClass}`}
+          readOnly={field.readOnly}
+          className={`${baseInputClass} ${errorClass} ${field.readOnly ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""}`}
         />
       );
 
@@ -130,7 +131,8 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
           onChange={(e) => onChange(e.target.value.toUpperCase())}
           maxLength={17}
           placeholder="Enter 17-digit VIN"
-          className={`${baseInputClass} ${errorClass} font-mono uppercase`}
+          readOnly={field.readOnly}
+          className={`${baseInputClass} ${errorClass} font-mono uppercase ${field.readOnly ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""}`}
         />
       );
 
@@ -189,7 +191,8 @@ const DynamicField = ({ field, value, onChange, error, form, categoryId }) => {
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder || "email@example.com"}
-          className={`${baseInputClass} ${errorClass}`}
+          readOnly={field.readOnly}
+          className={`${baseInputClass} ${errorClass} ${field.readOnly ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""}`}
         />
       );
 

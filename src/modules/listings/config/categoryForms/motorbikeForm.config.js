@@ -42,7 +42,7 @@ export const motorbikeFormConfig = {
     { name: "whatsappAvailable", label: "WhatsApp available on mobile number", type: "toggleSwitch", fullWidth: true, description: "Turn on to use the same mobile number for WhatsApp." },
     { name: "contactEmail", label: "Contact Email Address", type: "email", required: true, placeholder: "e.g. seller@example.com" },
     { name: "description", label: "Description", type: "textarea", required: true, span: 2, placeholder: "Describe the motorcycle's condition, history, and standout features..." },
-    { name: "hasLoanOption", label: "Available on Loan", description: "Buyer can apply for financing on this motorcycle", type: "toggleSwitch", span: 2 },
+    { name: "hasLoanOption", label: "Financing Available", description: "Is financing available for this vehicle?", type: "toggleSwitch", span: 2 },
   ],
 
   specsFields: [

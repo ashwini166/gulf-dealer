@@ -7,6 +7,7 @@ const normalizeToken = (value = "") =>
     .replace(/^-|-$/g, "");
 
 const isHexColor = (value = "") => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(value).trim());
+const HIDDEN_LISTING_ATTRIBUTE_KEYS = new Set(["availability"]);
 
 export const normalizeListingAttributeOption = (option, { useLabelAsValue = false } = {}) => {
   if (typeof option === "string") {
@@ -24,7 +25,11 @@ export const normalizeListingAttributeOption = (option, { useLabelAsValue = fals
 };
 
 const buildAttributeMap = (attributes = []) =>
-  new Map((attributes || []).filter((attribute) => attribute?.key).map((attribute) => [attribute.key, attribute]));
+  new Map(
+    (attributes || [])
+      .filter((attribute) => attribute?.key && !HIDDEN_LISTING_ATTRIBUTE_KEYS.has(attribute.key))
+      .map((attribute) => [attribute.key, attribute]),
+  );
 
 const mergeField = (field, attributeMap) => {
   const attribute = attributeMap.get(field.name);
@@ -58,8 +63,12 @@ export const mergeListingAttributesIntoConfig = (config, attributes = []) => {
 
   return {
     ...config,
-    vehicleInfoFields: (config.vehicleInfoFields || []).map((field) => mergeField(field, attributeMap)),
-    specsFields: (config.specsFields || []).map((field) => mergeField(field, attributeMap)),
+    vehicleInfoFields: (config.vehicleInfoFields || [])
+      .filter((field) => !HIDDEN_LISTING_ATTRIBUTE_KEYS.has(field.name))
+      .map((field) => mergeField(field, attributeMap)),
+    specsFields: (config.specsFields || [])
+      .filter((field) => !HIDDEN_LISTING_ATTRIBUTE_KEYS.has(field.name))
+      .map((field) => mergeField(field, attributeMap)),
     featureGroups: (config.featureGroups || []).map((group) => {
       const attribute = attributeMap.get(group.key);
       if (!attribute) return group;

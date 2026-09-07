@@ -1,7 +1,33 @@
 const ColorSwatchField = ({ value, onChange, swatches, error }) => {
-  const getSwatchColor = (color) => {
+  const hexLabelMap = {
+    "#ffffff": "White",
+    "#0f172a": "Black",
+    "#64748b": "Dark Grey",
+    "#94a3b8": "Grey",
+    "#1e3a8a": "Navy Blue",
+    "#2563eb": "Blue",
+    "#0891b2": "Cyan",
+    "#dc2626": "Red",
+    "#7c2d12": "Brown",
+    "#16a34a": "Green",
+    "#166534": "Dark Green",
+    "#ca8a04": "Gold",
+    "#facc15": "Yellow",
+    "#ea580c": "Orange",
+    "#7c3aed": "Purple",
+  };
+
+  const getSwatchLabel = (color) => {
     const rawValue = typeof color === "string" ? color : color.value;
     const label = typeof color === "string" ? color : color.label;
+    const normalizedHex = String(rawValue || "").toLowerCase();
+
+    return label || hexLabelMap[normalizedHex] || rawValue;
+  };
+
+  const getSwatchColor = (color) => {
+    const rawValue = typeof color === "string" ? color : color.value;
+    const label = getSwatchLabel(color);
     const explicitColor = typeof color === "string" ? "" : color.color;
     const normalized = String(label || rawValue || "").toLowerCase();
 
@@ -72,24 +98,33 @@ const ColorSwatchField = ({ value, onChange, swatches, error }) => {
     <div className={`flex min-h-11 flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 ${error ? "ring-2 ring-red-400 ring-offset-1" : ""}`}>
       {swatches.map((color) => {
         const optionValue = typeof color === "string" ? color : color.value;
-        const label = typeof color === "string" ? color : color.label;
+        const label = getSwatchLabel(color);
         const isSelected = value === label || value === optionValue;
         const fillColor = getSwatchColor(color);
 
         return (
-          <button
-            key={optionValue}
-            type="button"
-            onClick={() => onChange(label)}
-            style={{ backgroundColor: fillColor }}
-            className={`h-8 w-8 shrink-0 rounded-full border-2 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              isSelected ? "border-white ring-2 ring-blue-600 ring-offset-2" : "border-slate-300 hover:scale-105 hover:border-slate-400"
-            }`}
-            aria-label={label}
-            title={label}
-          />
+          <span key={optionValue} className="group relative inline-flex flex-col items-center">
+            <button
+              type="button"
+              onClick={() => onChange(label)}
+              style={{ backgroundColor: fillColor }}
+              className={`h-8 w-8 shrink-0 rounded-full border-2 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                isSelected ? "border-white ring-2 ring-blue-600 ring-offset-2" : "border-slate-300 hover:scale-105 hover:border-slate-400"
+              }`}
+              aria-label={label}
+              title={label}
+            />
+            <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-950 px-2 py-1 text-[11px] font-semibold text-white shadow-lg group-hover:block group-focus-within:block">
+              {label}
+            </span>
+          </span>
         );
       })}
+      {value ? (
+        <span className="ml-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+          {value}
+        </span>
+      ) : null}
     </div>
   );
 };

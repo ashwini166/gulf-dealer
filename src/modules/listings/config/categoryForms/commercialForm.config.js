@@ -40,7 +40,6 @@ export const commercialFormConfig = {
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
     { name: "sellerName", label: "Seller Name", type: "text", required: true, placeholder: "e.g. Fleet Motors Bahrain" },
     { name: "bodyType", label: "Body Type", type: "select", required: true },
-    { name: "availability", label: "Availability", type: "select", options: ["Available", "Reserved"] },
     { name: "mileage", label: "Mileage", type: "number", required: true, placeholder: "e.g. 42500" },
     { name: "fuelType", label: "Fuel Type", type: "select", required: true, options: ["Diesel", "Petrol", "Electric", "Hybrid", "CNG", "LNG"] },
     { name: "transmission", label: "Transmission", type: "select", required: true, options: ["Manual", "Automatic", "Automated Manual (AMT)", "Semi-Automatic"] },
@@ -54,7 +53,7 @@ export const commercialFormConfig = {
     { name: "whatsappAvailable", label: "WhatsApp available on mobile number", type: "toggleSwitch", fullWidth: true, description: "Turn on to use the same mobile number for WhatsApp." },
     { name: "contactEmail", label: "Contact Email Address", type: "email", required: true, placeholder: "e.g. seller@example.com" },
     { name: "description", label: "Vehicle Description", type: "textarea", required: true, span: 2, placeholder: "Describe the vehicle's condition, usage history, and standout features..." },
-    { name: "hasLoanOption", label: "Available on Loan", description: "Buyer can apply for financing on this vehicle", type: "toggleSwitch", span: 2 },
+    { name: "hasLoanOption", label: "Financing Available", description: "Is financing available for this vehicle?", type: "toggleSwitch", span: 2 },
   ],
 
   specsFields: [

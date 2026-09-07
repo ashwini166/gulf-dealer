@@ -23,6 +23,12 @@ const configByFormType = {
   SPECIAL_NUMBER: specialNumberFormConfig,
 };
 
+const ELECTRIC_OPTION = "electric";
+const ELECTRIC_OPTIONAL_FIELDS = new Set(["engineCapacity", "numberOfCylinders"]);
+
+const isElectricFuel = (value) =>
+  String(value || "").trim().toLowerCase() === ELECTRIC_OPTION;
+
 const Step5Specs = () => {
   const { listing, isSaving, saveStep, goPrevious, saveDraft } = useBulkVehicleWizard();
 
@@ -51,6 +57,11 @@ const Step5Specs = () => {
   const [form, setForm] = useState(buildInitialForm);
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
+  const selectedFuelType = form?.fuelType || listing?.vehicleInfo?.fuelType;
+  const shouldRelaxEngineFields = isElectricFuel(selectedFuelType);
+  const isRequiredField = (field) =>
+    Boolean(field.required) &&
+    !(shouldRelaxEngineFields && ELECTRIC_OPTIONAL_FIELDS.has(field.name));
 
   useEffect(() => {
     if (!listing?.specs) return;
@@ -71,7 +82,7 @@ const Step5Specs = () => {
       const rawValue = form[field.name];
 
       if (
-        field.required &&
+        isRequiredField(field) &&
         field.type !== "toggleSwitch" &&
         (rawValue === "" || rawValue === null || rawValue === undefined)
       ) {
@@ -128,7 +139,10 @@ const Step5Specs = () => {
               className={isFullWidth ? "sm:col-span-2" : ""}
             >
               {field.type !== "toggleSwitch" && (
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">{field.label}</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  {field.label}
+                  {isRequiredField(field) ? <span className="text-red-500"> *</span> : null}
+                </label>
               )}
               <DynamicField
                 field={field}

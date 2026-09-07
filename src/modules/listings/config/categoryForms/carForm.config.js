@@ -121,7 +121,6 @@ export const carFormConfig = {
     { name: "manufacturingYear", label: "Manufacturing Year", type: "yearSelect", required: true },
     { name: "bodyType", label: "Body Type", type: "select", required: true },
     { name: "sellerName", label: "Seller Name", type: "text", required: true, placeholder: "e.g. Ahmed Al Rashid" },
-    { name: "availability", label: "Availability", type: "select", options: ["Available", "Reserved"] },
     { name: "fuelType", label: "Fuel Type", type: "select", required: true, options: ["Petrol", "Diesel", "Hybrid", "Plug-in Hybrid", "Electric"] },
     { name: "transmission", label: "Transmission", type: "select", required: true, options: ["Automatic", "Manual", "CVT", "DCT"] },
     { name: "engineCapacity", label: "Engine Capacity", type: "text", placeholder: "e.g. 4600" },
@@ -138,7 +137,7 @@ export const carFormConfig = {
     { name: "whatsappAvailable", label: "WhatsApp available on mobile number", type: "toggleSwitch", fullWidth: true, description: "Turn on to use the same mobile number for WhatsApp." },
     { name: "contactEmail", label: "Contact Email Address", type: "email", required: true, placeholder: "e.g. seller@example.com" },
     { name: "description", label: "Vehicle Description", type: "textarea", required: true, span: 2, placeholder: "Describe the vehicle's condition, history, and standout features..." },
-    { name: "hasLoanOption", label: "Available on Loan", description: "Buyer can apply for financing on this vehicle", type: "toggleSwitch", span: 2 },
+    { name: "hasLoanOption", label: "Financing Available", description: "Is financing available for this vehicle?", type: "toggleSwitch", span: 2 },
   ],
 
   specsFields: [

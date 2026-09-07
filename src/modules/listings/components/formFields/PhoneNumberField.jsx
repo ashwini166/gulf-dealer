@@ -1,4 +1,4 @@
-import { ChevronDown, Globe2 } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const PHONE_COUNTRIES = [
@@ -8,20 +8,6 @@ const PHONE_COUNTRIES = [
   { iso2: "KW", name: "Kuwait", dial: "+965" },
   { iso2: "QA", name: "Qatar", dial: "+974" },
   { iso2: "OM", name: "Oman", dial: "+968" },
-  { iso2: "IN", name: "India", dial: "+91" },
-  { iso2: "PK", name: "Pakistan", dial: "+92" },
-  { iso2: "BD", name: "Bangladesh", dial: "+880" },
-  { iso2: "NP", name: "Nepal", dial: "+977" },
-  { iso2: "PH", name: "Philippines", dial: "+63" },
-  { iso2: "EG", name: "Egypt", dial: "+20" },
-  { iso2: "JO", name: "Jordan", dial: "+962" },
-  { iso2: "LB", name: "Lebanon", dial: "+961" },
-  { iso2: "TR", name: "Turkey", dial: "+90" },
-  { iso2: "GB", name: "United Kingdom", dial: "+44" },
-  { iso2: "US", name: "United States", dial: "+1" },
-  { iso2: "CA", name: "Canada", dial: "+1" },
-  { iso2: "AU", name: "Australia", dial: "+61" },
-  { iso2: "CUSTOM", name: "Custom country code", dial: "+" },
 ];
 
 const normalizeDialCode = (value) => {
@@ -43,24 +29,16 @@ const splitPhoneValue = (value) => {
   }
 
   const [, dialCode, phone] = match;
-  const country = PHONE_COUNTRIES.find((item) => item.dial === dialCode) || PHONE_COUNTRIES[PHONE_COUNTRIES.length - 1];
+  const country = PHONE_COUNTRIES.find((item) => item.dial === dialCode) || fallback;
 
   return {
     countryIso: country.iso2,
-    dialCode,
+    dialCode: country.dial,
     phone: phone.replace(/\D/g, "").slice(0, 15),
   };
 };
 
 const FlagMark = ({ country }) => {
-  if (country.iso2 === "CUSTOM") {
-    return (
-      <span className="flex h-4 w-6 items-center justify-center rounded-sm bg-slate-100 ring-1 ring-slate-200">
-        <Globe2 size={12} className="text-slate-500" />
-      </span>
-    );
-  }
-
   return (
     <span
       aria-hidden="true"
@@ -89,7 +67,7 @@ const PhoneNumberField = ({
   const selectedCountry =
     PHONE_COUNTRIES.find((country) => country.iso2 === effectiveSelectedIso && country.dial === parsed.dialCode) ||
     PHONE_COUNTRIES.find((country) => country.dial === parsed.dialCode) ||
-    PHONE_COUNTRIES[PHONE_COUNTRIES.length - 1];
+    PHONE_COUNTRIES[0];
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -147,7 +125,7 @@ const PhoneNumberField = ({
                   onClick={() => {
                     setSelectedIso(country.iso2);
                     updateValue(country.dial, parsed.phone);
-                    setIsOpen(country.iso2 === "CUSTOM");
+                    setIsOpen(false);
                   }}
                   className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold transition hover:bg-blue-50 hover:text-blue-600 ${
                     country.iso2 === selectedCountry.iso2 && country.dial === selectedCountry.dial
@@ -161,17 +139,6 @@ const PhoneNumberField = ({
                 </button>
               ))}
             </div>
-            {selectedCountry.iso2 === "CUSTOM" && (
-              <div className="border-t border-slate-100 p-2">
-                <input
-                  type="tel"
-                  value={parsed.dialCode}
-                  onChange={(event) => updateValue(event.target.value, parsed.phone)}
-                  placeholder="+999"
-                  className="h-9 w-full rounded-lg border border-slate-200 px-3 text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                />
-              </div>
-            )}
           </div>
         )}
       </div>

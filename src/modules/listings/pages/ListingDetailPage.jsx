@@ -610,7 +610,6 @@ const ListingDetailPage = () => {
     { name: "catalogModel", label: "Model", type: "modelSelect" },
     { name: "manufacturingYear", label: "Manufacturing Year", type: "text" },
     { name: "price", label: "Price", type: "text" },
-    { name: "availability", label: "Availability", type: "text" },
     { name: "sellerName", label: "Seller Name", type: "text" },
     { name: "mobileNumber", label: "Mobile Number", type: "text" },
     { name: "whatsappNumber", label: "WhatsApp Number", type: "text" },

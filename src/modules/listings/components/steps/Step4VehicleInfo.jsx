@@ -48,6 +48,11 @@ const Step4VehicleInfo = () => {
     user?.name ||
     "";
   const accountPhone = `${user?.countryCode || ""} ${user?.phone || ""}`.trim();
+  const accountWhatsapp =
+    `${user?.whatsappCountryCode || user?.countryCode || ""} ${
+      user?.whatsapp || user?.whatsappNumber || user?.phone || ""
+    }`.trim();
+  const accountEmail = user?.email || dealerProfile.email || "";
 
   const buildInitialForm = () => {
     const initial = {};
@@ -59,9 +64,13 @@ const Step4VehicleInfo = () => {
       } else if (field.type === "toggleSwitch") {
         initial[field.name] = existingInfo[field.name] ?? false;
       } else if (field.name === "sellerName") {
-        initial[field.name] = existingInfo[field.name] || accountSellerName;
-      } else if (field.type === "phone") {
+        initial[field.name] = accountSellerName || existingInfo[field.name] || "";
+      } else if (field.name === "mobileNumber") {
         initial[field.name] = existingInfo[field.name] || accountPhone;
+      } else if (field.name === "whatsappNumber") {
+        initial[field.name] = existingInfo[field.name] || accountWhatsapp || accountPhone;
+      } else if (field.name === "contactEmail") {
+        initial[field.name] = existingInfo[field.name] || accountEmail;
       } else {
         initial[field.name] = existingInfo[field.name] ?? "";
       }
@@ -74,19 +83,20 @@ const Step4VehicleInfo = () => {
   const fieldRefs = useRef({});
 
   useEffect(() => {
-    if (!accountSellerName && !accountPhone) return;
+    if (!accountSellerName && !accountPhone && !accountWhatsapp && !accountEmail) return;
 
     const timeoutId = window.setTimeout(() => {
       setForm((previous) => ({
         ...previous,
-        sellerName: previous.sellerName || accountSellerName,
+        sellerName: accountSellerName || previous.sellerName || "",
         mobileNumber: previous.mobileNumber || accountPhone,
-        whatsappNumber: previous.whatsappNumber || accountPhone,
+        whatsappNumber: previous.whatsappNumber || accountWhatsapp || accountPhone,
+        contactEmail: previous.contactEmail || accountEmail,
       }));
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [accountPhone, accountSellerName]);
+  }, [accountEmail, accountPhone, accountSellerName, accountWhatsapp]);
 
   const handleChange = (fieldName, value) => {
     setForm((previous) => {
@@ -146,7 +156,7 @@ const Step4VehicleInfo = () => {
   const handleNext = async () => {
     if (!validate()) return;
 
-    const payload = { ...form };
+    const payload = { ...form, sellerName: accountSellerName || form.sellerName || "" };
     if (payload.whatsappAvailable) payload.whatsappNumber = payload.mobileNumber;
     config.vehicleInfoFields.forEach((field) => {
       if (field.type === "phone" && payload[field.name]) {
@@ -172,6 +182,8 @@ const Step4VehicleInfo = () => {
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         {config.vehicleInfoFields.map((field) => {
+          const renderField =
+            field.name === "sellerName" ? { ...field, readOnly: true } : field;
           const isFullWidth = field.span === 2;
 
           return (
@@ -180,16 +192,32 @@ const Step4VehicleInfo = () => {
               ref={(el) => (fieldRefs.current[field.name] = el)}
               className={isFullWidth ? "sm:col-span-2" : ""}
             >
-              <FormField label={field.label} required={field.required} error={errors[field.name]}>
-                <DynamicField
-                  field={field}
-                  value={form[field.name]}
-                  onChange={(value) => handleChange(field.name, value)}
-                  error={errors[field.name]}
-                  form={form}
-                  categoryId={categoryId}
-                />
-              </FormField>
+              {field.type === "toggleSwitch" ? (
+                <>
+                  <DynamicField
+                    field={renderField}
+                    value={form[field.name]}
+                    onChange={(value) => handleChange(field.name, value)}
+                    error={errors[field.name]}
+                    form={form}
+                    categoryId={categoryId}
+                  />
+                  {errors[field.name] ? (
+                    <p className="mt-1 text-xs font-medium text-red-600">{errors[field.name]}</p>
+                  ) : null}
+                </>
+              ) : (
+                <FormField label={field.label} required={field.required} error={errors[field.name]}>
+                  <DynamicField
+                    field={renderField}
+                    value={form[field.name]}
+                    onChange={(value) => handleChange(field.name, value)}
+                    error={errors[field.name]}
+                    form={form}
+                    categoryId={categoryId}
+                  />
+                </FormField>
+              )}
             </div>
           );
         })}

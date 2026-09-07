@@ -14,18 +14,6 @@ const PHONE_LENGTH_RULES = {
   "+965": { exact: 8 },
   "+974": { exact: 8 },
   "+968": { exact: 8 },
-  "+91": { exact: 10 },
-  "+92": { exact: 10 },
-  "+880": { exact: 10 },
-  "+977": { exact: 10 },
-  "+63": { exact: 10 },
-  "+20": { exact: 10 },
-  "+962": { exact: 9 },
-  "+961": { min: 7, max: 8 },
-  "+90": { exact: 10 },
-  "+44": { exact: 10 },
-  "+1": { exact: 10 },
-  "+61": { exact: 9 },
 };
 
 export const validatePhoneContact = (value, label = "Phone number") => {
@@ -40,8 +28,8 @@ export const validatePhoneContact = (value, label = "Phone number") => {
   const [, dialCode, phone] = match;
   const rule = PHONE_LENGTH_RULES[dialCode];
 
-  if (!rule && (phone.length < 6 || phone.length > 15)) {
-    return `${label} must include 6 to 15 digits for ${dialCode}`;
+  if (!rule) {
+    return `${label} country code must be one of the GCC countries`;
   }
 
   if (rule?.exact && phone.length !== rule.exact) {
