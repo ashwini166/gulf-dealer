@@ -17,6 +17,11 @@ import { scrollFirstWizardError } from "../../utils/wizardScroll";
 import { normalizePhoneContact, validatePhoneContact } from "../../utils/phoneNumber";
 import { useListingAttributeConfig } from "../../hooks/useListingAttributeConfig";
 
+const ELECTRIC_DEPENDENT_FIELDS = new Set(["engineCapacity", "numberOfCylinders"]);
+
+const isElectricFuel = (value) =>
+  String(value || "").trim().toLowerCase() === "electric";
+
 const configByFormType = {
   CAR: carFormConfig,
   COMMERCIAL: commercialFormConfig,
@@ -81,6 +86,16 @@ const Step4VehicleInfo = () => {
   const [form, setForm] = useState(buildInitialForm);
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
+  const hasFuelType = String(form?.fuelType || "").trim() !== "";
+  const isElectric = isElectricFuel(form?.fuelType);
+  const shouldHideField = (field) =>
+    isElectric && ELECTRIC_DEPENDENT_FIELDS.has(field.name);
+  const visibleVehicleInfoFields = config.vehicleInfoFields.filter(
+    (field) => !shouldHideField(field)
+  );
+  const isRequiredField = (field) =>
+    Boolean(field.required) ||
+    (hasFuelType && !isElectric && ELECTRIC_DEPENDENT_FIELDS.has(field.name));
 
   useEffect(() => {
     if (!accountSellerName && !accountPhone && !accountWhatsapp && !accountEmail) return;
@@ -120,8 +135,8 @@ const Step4VehicleInfo = () => {
   const validate = () => {
     const nextErrors = {};
 
-    config.vehicleInfoFields.forEach((field) => {
-      if (field.required && !form[field.name]) {
+    visibleVehicleInfoFields.forEach((field) => {
+      if (isRequiredField(field) && !form[field.name]) {
         nextErrors[field.name] = `${field.label} is required`;
       }
 
@@ -145,7 +160,7 @@ const Step4VehicleInfo = () => {
     if (Object.keys(nextErrors).length > 0) {
       scrollFirstWizardError(
         fieldRefs,
-        config.vehicleInfoFields.map((field) => field.name),
+        visibleVehicleInfoFields.map((field) => field.name),
         nextErrors
       );
     }
@@ -157,6 +172,9 @@ const Step4VehicleInfo = () => {
     if (!validate()) return;
 
     const payload = { ...form, sellerName: accountSellerName || form.sellerName || "" };
+    config.vehicleInfoFields.forEach((field) => {
+      if (shouldHideField(field)) payload[field.name] = null;
+    });
     if (payload.whatsappAvailable) payload.whatsappNumber = payload.mobileNumber;
     config.vehicleInfoFields.forEach((field) => {
       if (field.type === "phone" && payload[field.name]) {
@@ -181,7 +199,7 @@ const Step4VehicleInfo = () => {
       <p className="mt-1 text-sm text-slate-500">Provide accurate details to attract buyers.</p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        {config.vehicleInfoFields.map((field) => {
+        {visibleVehicleInfoFields.map((field) => {
           const renderField =
             field.name === "sellerName" ? { ...field, readOnly: true } : field;
           const isFullWidth = field.span === 2;
@@ -207,7 +225,7 @@ const Step4VehicleInfo = () => {
                   ) : null}
                 </>
               ) : (
-                <FormField label={field.label} required={field.required} error={errors[field.name]}>
+                <FormField label={field.label} required={isRequiredField(field)} error={errors[field.name]}>
                   <DynamicField
                     field={renderField}
                     value={form[field.name]}

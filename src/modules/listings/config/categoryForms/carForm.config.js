@@ -157,6 +157,7 @@ export const carFormConfig = {
     { name: "serviceHistory", label: "Service History", type: "select", options: ["Full", "Partial", "None"] },
     { name: "accidentHistory", label: "Accident History", type: "select", options: ["No Accident", "Minor", "Major"] },
     { name: "warranty", label: "Warranty", type: "select", options: ["Manufacturer", "Dealer", "Extended", "None"] },
+    { name: "insuranceValid", label: "Insurance Covered", type: "toggleSwitch", fullWidth: true },
     { name: "numberOfKeys", label: "Number of Keys", type: "select", options: ["1", "2", "3+"] },
     { name: "isGccSpecs", label: "GCC Specifications", description: "Vehicle manufactured for GCC market", type: "toggleSwitch", fullWidth: true },
     { name: "isImported", label: "Imported Vehicle", description: "Vehicle imported from outside GCC", type: "toggleSwitch", fullWidth: true },

@@ -29,7 +29,7 @@ export const COMMERCIAL_VEHICLE_TYPE_OPTIONS = [
 
 export const commercialFormConfig = {
   key: "COMMERCIAL",
-  label: "Commercial Vehicle",
+  label: "Commercial Vehicles",
 
   vehicleInfoFields: [
     { name: "title", label: "Vehicle Title", type: "text", required: true, span: 2, placeholder: "e.g. 2023 Mercedes-Benz Arocs 5460 Tipper Truck" },
@@ -75,7 +75,7 @@ export const commercialFormConfig = {
     { name: "warranty", label: "Warranty", type: "select", options: ["Manufacturer", "Dealer", "Extended", "None"] },
     { name: "serviceHistory", label: "Service History", type: "select", options: ["Full", "Partial", "None"] },
     { name: "accidentHistory", label: "Accident History", type: "select", options: ["No Accident", "Minor", "Major"] },
-    { name: "insuranceValid", label: "Insurance Valid", type: "yesNoSelect" },
+    { name: "insuranceValid", label: "Insurance Covered", type: "toggleSwitch", fullWidth: true },
     { name: "numberOfKeys", label: "Number of Keys", type: "select", options: ["1", "2", "3+"] },
   ],
 

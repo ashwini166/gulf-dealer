@@ -11,7 +11,7 @@ const BUGGY_INTERIOR_COLOR_OPTIONS = [
 
 export const buggyFormConfig = {
   key: "BUGGY",
-  label: "Buggy",
+  label: "Buggies",
 
   vehicleInfoFields: [
     { name: "title", label: "Listing Title", type: "text", required: true, span: 2, placeholder: "e.g. 2023 Polaris RZR Pro XP Sand Buggy" },
@@ -51,6 +51,7 @@ export const buggyFormConfig = {
     { name: "groundClearance", label: "Ground Clearance", type: "text", placeholder: "e.g. 355 mm" },
     { name: "weight", label: "Weight (kg)", type: "number", placeholder: "e.g. 725" },
     { name: "seatingCapacity", label: "Seating Capacity", type: "select", required: true, options: ["1 Seater", "2 Seater", "3 Seater", "4 Seater", "5 Seater", "6 Seater"] },
+    { name: "insuranceValid", label: "Insurance Covered", type: "toggleSwitch", fullWidth: true },
   ],
 
   featureGroups: [

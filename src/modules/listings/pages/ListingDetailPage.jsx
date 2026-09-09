@@ -31,6 +31,7 @@ import EditableFieldSection from "../components/detail/EditableFieldSection";
 import FeaturesDisplay from "../components/detail/FeaturesDisplay";
 import CustomerInquiries from "../components/detail/CustomerInquiries";
 import SellerInfoCard from "../components/detail/SellerInfoCard";
+import PlanAddOnsSection from "../components/detail/PlanAddOnsSection";
 import { submitSingleBulkListingApi } from "../api/bulkListingApi";
 import heroImage from "../../../assets/hero.png";
 import { useListingAttributeConfig } from "../hooks/useListingAttributeConfig";
@@ -106,8 +107,9 @@ const ListingOverviewCard = ({
   const media = listing?.media || {};
   const thumbs = [
     ...(media.featuredImage?.url ? [{ type: "image", url: media.featuredImage.url }] : []),
-    ...(media.images || []).map((image) => ({ type: "image", url: image.url })),
     ...(media.video?.url ? [{ type: "video", url: media.video.url }] : []),
+    ...(media.images || []).map((image) => ({ type: "image", url: image.url })),
+    ...(media.secondaryImages || []).map((image) => ({ type: "image", url: image.url })),
   ];
   const activeMedia = thumbs[activeIndex] || thumbs[0];
   const vehicleInfo = listing?.vehicleInfo || {};
@@ -590,6 +592,24 @@ const ListingDetailPage = () => {
   const vehicleInfo = listing.vehicleInfo || {};
   const specs = listing.specs || {};
   const features = listing.features || {};
+  const electricDependentFields = new Set(["engineCapacity", "numberOfCylinders"]);
+  const isElectricListing =
+    String(vehicleInfo?.fuelType || specs?.fuelType || "").trim().toLowerCase() === "electric";
+  const displaySpecsFields = [
+    { name: "mileage", label: "Mileage", type: "number" },
+    { name: "transmission", label: "Transmission", type: "text" },
+    { name: "engineCapacity", label: "Engine Capacity", type: "text" },
+    { name: "doors", label: "Doors", type: "text" },
+    { name: "exteriorColor", label: "Exterior Color", type: "text" },
+    { name: "steeringSide", label: "Steering Side", type: "text" },
+    { name: "fuelType", label: "Fuel Type", type: "text" },
+    { name: "driveType", label: "Drive Type", type: "text" },
+    { name: "horsepower", label: "Horsepower", type: "number" },
+    { name: "seats", label: "Seats", type: "text" },
+    { name: "interiorColor", label: "Interior Color", type: "text" },
+    { name: "vehicleClass", label: "Vehicle Class", type: "text" },
+    { name: "insuranceValid", label: "Insurance Covered", type: "toggleSwitch" },
+  ].filter((field) => !isElectricListing || !electricDependentFields.has(field.name));
   const displayVehicleInfo = {
     ...vehicleInfo,
     category: listing.category?.name || listing.category?.label || config.label,
@@ -651,6 +671,8 @@ const ListingDetailPage = () => {
       />
 
       <div className="space-y-[16px]">
+        <PlanAddOnsSection listing={listing} />
+
         <EditableFieldSection
           title={formType === "SPECIAL_NUMBER" ? "Plate Info" : "Vehicle Information"}
           step={4}
@@ -670,20 +692,7 @@ const ListingDetailPage = () => {
             title={config.engineSectionTitle || `${config.label} Specifications`}
             step={5}
             fields={config.specsFields}
-            displayFields={[
-              { name: "mileage", label: "Mileage", type: "number" },
-              { name: "transmission", label: "Transmission", type: "text" },
-              { name: "engineCapacity", label: "Engine Capacity", type: "text" },
-              { name: "doors", label: "Doors", type: "text" },
-              { name: "exteriorColor", label: "Exterior Color", type: "text" },
-              { name: "steeringSide", label: "Steering Side", type: "text" },
-              { name: "fuelType", label: "Fuel Type", type: "text" },
-              { name: "driveType", label: "Drive Type", type: "text" },
-              { name: "horsepower", label: "Horsepower", type: "number" },
-              { name: "seats", label: "Seats", type: "text" },
-              { name: "interiorColor", label: "Interior Color", type: "text" },
-              { name: "vehicleClass", label: "Vehicle Class", type: "text" },
-            ]}
+            displayFields={displaySpecsFields}
             displaySourceData={{ ...vehicleInfo, ...specs }}
             sourceData={specs}
             categoryId={categoryId}

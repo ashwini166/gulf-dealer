@@ -168,7 +168,7 @@ export default function ListingsTable({
                         tab === "pending" ? "text-amber-500" : "text-red-500"
                       }`}
                     >
-                      {tab === "pending" ? "Pending for Approval" : "Rejected"}
+                      {tab === "pending" ? "Pending for approval" : "Rejected"}
                     </span>
                   </td>
                 )}

@@ -10,7 +10,7 @@ const MOTORBIKE_COLOR_OPTIONS = [
 
 export const motorbikeFormConfig = {
   key: "MOTORBIKE",
-  label: "Motorcycle",
+  label: "Motorcycles",
   engineSectionTitle: "Technical Specifications",
   engineSectionDescription: "Add technical details specific to the motorcycle.",
 
@@ -98,7 +98,7 @@ export const motorbikeFormConfig = {
       ],
     },
     { name: "hasWarrantyAvailable", label: "Warranty Available", type: "toggleSwitch", fullWidth: true },
-    { name: "insuranceIncluded", label: "Insurance Included", type: "toggleSwitch", fullWidth: true },
+    { name: "insuranceValid", label: "Insurance Covered", type: "toggleSwitch", fullWidth: true },
     { name: "numberOfKeys", label: "Number of Keys", type: "select", placeholder: "Select number of keys", options: [
       { label: "1", value: "1" },
       { label: "2", value: "2" },

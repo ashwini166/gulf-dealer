@@ -12,7 +12,7 @@ const CARAVAN_INTERIOR_COLOR_OPTIONS = [
 
 export const caravanFormConfig = {
   key: "CARAVAN",
-  label: "Caravan",
+  label: "Caravans",
 
   vehicleInfoFields: [
     { name: "title", label: "Listing Title", type: "text", required: true, span: 2, placeholder: "e.g. 2022 Bailey Phoenix 640 Touring Caravan" },
@@ -47,6 +47,7 @@ export const caravanFormConfig = {
     { name: "blackWaterTank", label: "Black Water Tank", type: "number", placeholder: "Litres" },
     { name: "numberOfAxles", label: "Number of Axles", type: "select", options: ["1", "2", "3"] },
     { name: "slideOuts", label: "Slide-Outs", type: "select", options: ["0", "1", "2", "3", "4"] },
+    { name: "insuranceValid", label: "Insurance Covered", type: "toggleSwitch", fullWidth: true },
   ],
 
   featureGroups: [

@@ -1,6 +1,6 @@
 export const specialNumberFormConfig = {
   key: "SPECIAL_NUMBER",
-  label: "Special Number",
+  label: "Special Numbers",
 
   // No Sale/Rent/Condition toggle needed — Step 2 handles
   // Sale/Auction directly for this category, and the admin form

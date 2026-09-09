@@ -58,10 +58,17 @@ const Step5Specs = () => {
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
   const selectedFuelType = form?.fuelType || listing?.vehicleInfo?.fuelType;
+  const hasFuelType = String(selectedFuelType || "").trim() !== "";
   const shouldRelaxEngineFields = isElectricFuel(selectedFuelType);
+  const shouldHideField = (field) =>
+    shouldRelaxEngineFields && ELECTRIC_OPTIONAL_FIELDS.has(field.name);
+  const visibleSpecsFields = config.specsFields.filter(
+    (field) => !shouldHideField(field)
+  );
   const isRequiredField = (field) =>
-    Boolean(field.required) &&
-    !(shouldRelaxEngineFields && ELECTRIC_OPTIONAL_FIELDS.has(field.name));
+    (Boolean(field.required) &&
+      !(shouldRelaxEngineFields && ELECTRIC_OPTIONAL_FIELDS.has(field.name))) ||
+    (!shouldRelaxEngineFields && hasFuelType && ELECTRIC_OPTIONAL_FIELDS.has(field.name));
 
   useEffect(() => {
     if (!listing?.specs) return;
@@ -79,6 +86,11 @@ const Step5Specs = () => {
     const nextErrors = {};
 
     config.specsFields.forEach((field) => {
+      if (shouldHideField(field)) {
+        payload[field.name] = null;
+        return;
+      }
+
       const rawValue = form[field.name];
 
       if (
@@ -104,7 +116,7 @@ const Step5Specs = () => {
       setErrors(nextErrors);
       scrollFirstWizardError(
         fieldRefs,
-        config.specsFields.map((field) => field.name),
+        visibleSpecsFields.map((field) => field.name),
         nextErrors
       );
       return;
@@ -127,7 +139,7 @@ const Step5Specs = () => {
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        {config.specsFields.map((field) => {
+        {visibleSpecsFields.map((field) => {
           const isFullWidth = field.type === "toggleSwitch" || field.fullWidth;
 
           return (

@@ -47,6 +47,7 @@ export const heavyEquipmentFormConfig = {
     { name: "numberOfOwners", label: "Number of Owners", type: "select", options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"] },
     { name: "serviceHistory", label: "Service History", type: "select", options: ["Full", "Partial", "None"] },
     { name: "hasWarrantyAvailable", label: "Warranty Available", type: "toggleSwitch", fullWidth: true },
+    { name: "insuranceValid", label: "Insurance Covered", type: "toggleSwitch", fullWidth: true },
   ],
 
   featureGroups: [

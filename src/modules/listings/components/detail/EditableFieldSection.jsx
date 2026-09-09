@@ -39,6 +39,11 @@ const formatDisplayValue = (field, rawValue) => {
 
 const isBlank = (value) => value === undefined || value === null || String(value).trim() === "";
 
+const isElectricFuel = (value) =>
+  String(value || "").trim().toLowerCase() === "electric";
+
+const ELECTRIC_DEPENDENT_FIELDS = new Set(["engineCapacity", "numberOfCylinders"]);
+
 const toIdValue = (value) => {
   if (!value || typeof value !== "object") return value ?? "";
   return value._id || value.id || "";
@@ -72,16 +77,13 @@ const EditableFieldSection = ({
   gridLayout = "sm:grid-cols-2",
 }) => {
   const { showToast } = useToast();
-  const visibleFields = displayFields || fields;
+  const baseVisibleFields = displayFields || fields;
   const visibleSourceData = displaySourceData || sourceData;
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
-  const missingRequiredCount = fields.filter(
-    (field) => field.required && isBlank(sourceData?.[field.name])
-  ).length;
 
   const buildInitialForm = () => {
     const initial = {};
@@ -103,6 +105,17 @@ const EditableFieldSection = ({
   };
 
   const [form, setForm] = useState(buildInitialForm);
+  const isElectric = isElectricFuel(form?.fuelType || sourceData?.fuelType || visibleSourceData?.fuelType);
+  const hasFuelType = String(form?.fuelType || sourceData?.fuelType || visibleSourceData?.fuelType || "").trim() !== "";
+  const isHiddenField = (field) => isElectric && ELECTRIC_DEPENDENT_FIELDS.has(field.name);
+  const isRequiredField = (field) =>
+    (Boolean(field.required) && !(isElectric && ELECTRIC_DEPENDENT_FIELDS.has(field.name))) ||
+    (!isElectric && hasFuelType && ELECTRIC_DEPENDENT_FIELDS.has(field.name));
+  const visibleFields = baseVisibleFields.filter((field) => !isHiddenField(field));
+  const editingFields = fields.filter((field) => !isHiddenField(field));
+  const missingRequiredCount = editingFields.filter(
+    (field) => isRequiredField(field) && isBlank(sourceData?.[field.name])
+  ).length;
 
   const handleChange = (fieldName, value) => {
     setForm((previous) => {
@@ -123,10 +136,10 @@ const EditableFieldSection = ({
   const validate = () => {
     const nextErrors = {};
 
-    fields.forEach((field) => {
+    editingFields.forEach((field) => {
       const value = form[field.name];
 
-      if (field.required && isBlank(value)) {
+      if (isRequiredField(field) && isBlank(value)) {
         nextErrors[field.name] = `${field.label} is required`;
       } else if (field.type === "email" && !isBlank(value) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
         nextErrors[field.name] = "Please enter a valid email address";
@@ -180,6 +193,9 @@ const EditableFieldSection = ({
     setIsSaving(true);
 
     const payload = { ...sourceData, ...form };
+    fields.forEach((field) => {
+      if (isHiddenField(field)) payload[field.name] = null;
+    });
 
     ["brand", "catalogModel"].forEach((fieldName) => {
       if (payload[fieldName] !== undefined) {
@@ -266,7 +282,7 @@ const EditableFieldSection = ({
         </p>
       ) : (
       <div className={`grid px-5 py-4 ${isEditing ? "gap-x-6 gap-y-4" : "gap-x-9 gap-y-0"} ${gridLayout}`}>
-        {(isEditing ? fields : visibleFields).map((field) => {
+        {(isEditing ? editingFields : visibleFields).map((field) => {
           const isFullWidth = field.span === 2 || field.type === "textarea";
 
           return (
@@ -280,7 +296,7 @@ const EditableFieldSection = ({
                   {field.type !== "toggleSwitch" && (
                     <label className="mb-1.5 block text-sm font-medium text-slate-700">
                       {field.label}
-                      {field.required && <span className="ml-1 text-red-500">*</span>}
+                      {isRequiredField(field) && <span className="ml-1 text-red-500">*</span>}
                     </label>
                   )}
                   <div className={errors[field.name] ? "rounded-lg ring-2 ring-red-400 ring-offset-1" : ""}>
