@@ -398,7 +398,10 @@ export default function AdDetailPage() {
                   </span>
                 ),
               }}
-              right={{ label: "VAT (10%)", value: formatCurrency(ad.vatAmount) }}
+              right={{
+                label: `${ad.taxName || "VAT"} (${Number((ad.vatRate || 0) * 100)}%)`,
+                value: formatCurrency(ad.vatAmount),
+              }}
             />
           </div>
         </Section>

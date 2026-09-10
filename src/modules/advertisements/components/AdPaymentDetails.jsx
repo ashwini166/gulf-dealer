@@ -12,6 +12,8 @@ function Field({ label, value, highlight }) {
 }
 
 export default function AdPaymentDetails({ ad, onDownloadInvoice }) {
+  const taxLabel = `${ad.taxName || "VAT"} (${Number((ad.vatRate || 0) * 100)}%)`;
+
   return (
     <>
       <div className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
@@ -59,7 +61,7 @@ export default function AdPaymentDetails({ ad, onDownloadInvoice }) {
             <Field label="Invoice Number" value={ad.invoiceNumber} />
             <Field label="Amount Paid" value={`BHD ${ad.amount}`} />
             <Field label="Transaction Date" value={ad.transactionDate} />
-            <Field label="VAT (10%)" value={`BHD ${ad.vatAmount}`} />
+            <Field label={taxLabel} value={`${ad.currency || "BHD"} ${ad.vatAmount}`} />
           </div>
         </div>
       </div>

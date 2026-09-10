@@ -2,8 +2,9 @@ import { isPremiumPlan } from "../utils/planHelpers";
 
 export default function PlanCard({ plan, isCurrent, onSelect }) {
   const tier = plan.pricingTiers?.[0];
-  const price = plan.finalPrice ?? tier?.finalPrice ?? tier?.price ?? 0;
+  const price = plan.basePrice ?? tier?.basePrice ?? tier?.price ?? 0;
   const isPremium = isPremiumPlan(plan);
+  const taxName = plan.taxName || tier?.taxName || "VAT";
 
   return (
     <div
@@ -26,14 +27,14 @@ export default function PlanCard({ plan, isCurrent, onSelect }) {
           isPremium ? "text-amber-400" : "text-blue-600"
         }`}
       >
-        BHD {Number(price || 0).toFixed(3)}
+        {plan.currency || "BHD"} {Number(price || 0).toFixed(3)}
       </p>
       <p
         className={`mt-1 text-xs ${
           isPremium ? "text-slate-300" : "text-slate-500"
         }`}
       >
-        {plan.vatEnabled ? "VAT-inclusive" : "VAT-exclusive"}
+        {plan.vatEnabled ? `Incl. ${taxName}` : `Excl. ${taxName}`}
       </p>
 
       {/* Duration */}

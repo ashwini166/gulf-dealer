@@ -37,7 +37,7 @@ const devices = [
 
 const durationOptions = [7, 15, 30, 60, 90];
 
-const formatCurrency = (value) => `BHD ${(Number(value) || 0).toFixed(3)}`;
+const formatCurrency = (value, currency = "BHD") => `${currency} ${(Number(value) || 0).toFixed(3)}`;
 
 const wizardSteps = [
   "Placement",
@@ -132,6 +132,17 @@ const getTierPrice = (plan, durationDays) =>
 
 const getMostPopularDuration = (pricingTiers = []) =>
   pricingTiers.find((tier) => tier.isMostPopular)?.durationDays || 30;
+
+const getTaxMeta = (plan) => {
+  const taxName = plan?.taxName || "VAT";
+  const percentage = plan?.vatEnabled ? Number(plan.vatPercentage || 0) : 0;
+
+  return {
+    taxName,
+    percentage,
+    label: plan?.vatEnabled ? `${taxName} (${percentage}%)` : taxName,
+  };
+};
 
 const getPlacementMeta = (category) =>
   placementMeta.find((placement) => placement.category === category) ||
@@ -315,8 +326,8 @@ const FileUpload = ({ file, label, onChange }) => {
   );
 };
 
-const SummaryPanel = ({ placement, durationDays, price, isIncludedWithPlan }) => {
-  const vat = Number((Number(price || 0) * 0.05).toFixed(3));
+const SummaryPanel = ({ placement, durationDays, price, isIncludedWithPlan, currency, taxMeta }) => {
+  const vat = Number(((Number(price || 0) * taxMeta.percentage) / 100).toFixed(3));
   const total = Number((Number(price || 0) + vat).toFixed(3));
 
   return (
@@ -343,16 +354,16 @@ const SummaryPanel = ({ placement, durationDays, price, isIncludedWithPlan }) =>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Ad Fee</span>
-          <span className="font-bold text-slate-950">{formatCurrency(price)}</span>
+          <span className="font-bold text-slate-950">{formatCurrency(price, currency)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-400">VAT (5%)</span>
-          <span className="text-slate-400">{formatCurrency(vat)}</span>
+          <span className="text-slate-400">{taxMeta.label}</span>
+          <span className="text-slate-400">{formatCurrency(vat, currency)}</span>
         </div>
       </div>
       <div className="mt-4 flex items-center justify-between rounded-xl bg-blue-50 px-4 py-3">
         <span className="font-bold text-blue-600">Total</span>
-        <span className="text-lg font-black text-blue-600">{formatCurrency(total)}</span>
+        <span className="text-lg font-black text-blue-600">{formatCurrency(total, currency)}</span>
       </div>
       <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
         <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Estimated Reach</p>
@@ -426,11 +437,13 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
 
   const selectedPlan = plans.find((plan) => plan.category === form.category);
   const selectedPlacement = getPlacementMeta(form.category);
+  const selectedCurrency = selectedPlan?.currency || "BHD";
+  const taxMeta = getTaxMeta(selectedPlan);
   const price = getTierPrice(selectedPlan, form.durationDays);
   const selectedPlanBenefit = planAdBenefits[form.category];
   const isIncludedWithPlan = Number(selectedPlanBenefit?.remaining || 0) > 0;
   const effectivePrice = isIncludedWithPlan ? 0 : price;
-  const vat = Number((effectivePrice * 0.05).toFixed(3));
+  const vat = Number(((effectivePrice * taxMeta.percentage) / 100).toFixed(3));
   const total = Number((effectivePrice + vat).toFixed(3));
   const progress = Math.round((step / wizardSteps.length) * 100);
   const walletBalance = Number(wallet?.balance || 0);
@@ -842,8 +855,8 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
                 ["Advertisement", form.name || selectedPlacement.title],
                 ["Placement", selectedPlacement.title],
                 ["Duration", isIncludedWithPlan ? "Until plan expiry" : `${form.durationDays} Days`],
-                ["Ad Fee", isIncludedWithPlan ? "Included with dealer plan" : formatCurrency(effectivePrice)],
-                ["VAT (5%)", formatCurrency(vat)],
+                ["Ad Fee", isIncludedWithPlan ? "Included with dealer plan" : formatCurrency(effectivePrice, selectedCurrency)],
+                [taxMeta.label, formatCurrency(vat, selectedCurrency)],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-4 border-b border-slate-100 pb-3">
                   <span className="text-slate-500">{label}</span>
@@ -962,6 +975,8 @@ function CreateAdModal({ draft, onClose, onCreated, planAdBenefits = {} }) {
               durationDays={form.durationDays}
               price={effectivePrice}
               isIncludedWithPlan={isIncludedWithPlan}
+              currency={selectedCurrency}
+              taxMeta={taxMeta}
             />
           ) : null}
         </div>
